@@ -4,135 +4,194 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>BrainShift Ramayan</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
-    <script type="module" crossorigin src="/assets/index-CnYor76u.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-BvsV32Xa.css">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script type="module" crossorigin src="/brainshift-game-trial1/assets/index-BxjAM6SO.js"></script>
+    <link rel="stylesheet" crossorigin href="/brainshift-game-trial1/assets/index-B91aEA_c.css">
   </head>
   <body>
     <div id="app">
-      <!-- Game Canvas (Layer 1) -->
+      <!-- 3D Game Canvas -->
       <canvas id="game-canvas"></canvas>
-      
-      <!-- UI Layer (Layer 2) -->
+
+      <!-- UI Layer Overlay -->
       <div id="ui-layer">
         
         <!-- Splash Screen -->
         <div id="splash-screen" class="screen active">
-          <div class="splash-content">
-            <div class="glow-decoration"></div>
-            <h1>BRAINSHIFT</h1>
-            <h2>RAMAYAN</h2>
-            <p class="splash-caption">Think. Discover. Shift.</p>
-            <div class="motif-decoration"></div>
+          <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+            <h1 style="font-family:'Cinzel', serif; font-size:3rem; color:var(--saffron); text-shadow: 2px 2px 0 var(--brown); -webkit-text-stroke: 1px var(--brown);">BRAINSHIFT</h1>
+            <h2 style="font-family:'Cinzel', serif; font-size:2rem; color:var(--gold); text-shadow: 2px 2px 0 var(--brown);">RAMAYAN</h2>
+            <p style="margin-top: 20px; font-weight: 600; color: var(--brown-dark);">Think. Discover. Shift.</p>
           </div>
         </div>
 
-        <!-- Home Screen -->
+        <!-- Main Menu -->
         <div id="main-menu" class="screen">
           <div class="home-top-bar">
-            <button class="icon-btn" id="btn-settings">⚙️</button>
-            <button class="icon-btn" id="btn-profile">👤</button>
+            <button class="icon-btn" id="btn-settings">⚙</button>
+            <button class="icon-btn" id="btn-sound">🔊</button>
           </div>
+          
           <div class="home-hero">
-            <h1>BRAINSHIFT</h1>
-            <p class="subtitle">Think. Discover. Shift.</p>
-            <div class="hero-illustration"></div>
+            <div class="home-hero-title">
+              <h1>BRAINSHIFT</h1>
+              <h2>RAMAYAN</h2>
+              <p class="subtitle">Think. Discover. Shift.</p>
+            </div>
           </div>
-          <div class="home-actions">
+          
+          <div style="display:flex; flex-direction:column; gap:15px; margin-bottom: 20px;">
             <button id="btn-play" class="btn-primary">
               <span class="btn-title">▶ PLAY</span>
-              <span class="btn-subtitle">Continue your journey</span>
+              <span class="btn-subtitle">Start your journey</span>
             </button>
-            <div class="secondary-actions">
-              <button id="btn-levels" class="btn-secondary">
-                <span class="icon">◈</span> LEVELS
-              </button>
-              <button id="btn-how" class="btn-secondary">
-                <span class="icon">?</span> HOW TO PLAY
-              </button>
+            <div style="display:flex; gap:15px;">
+              <button id="btn-levels" class="btn-secondary">◈ LEVELS</button>
+              <button id="btn-how" class="btn-secondary">? HOW TO PLAY</button>
             </div>
           </div>
         </div>
 
-        <!-- Chapter Select -->
+        <!-- Chapter Selection -->
         <div id="chapter-menu" class="screen">
           <div class="screen-header">
-            <button class="icon-btn back-btn" id="btn-back-chapters">←</button>
+            <button class="icon-btn" id="btn-back-chapters">←</button>
             <div class="header-titles">
               <h3>YOUR JOURNEY</h3>
-              <p>Explore the story, one challenge at a time.</p>
+              <p>Select Chapter</p>
             </div>
           </div>
+          
           <div class="scroll-container">
-            <div class="chapter-card current" id="chap-1">
+            <div id="chap-1" class="chapter-card current">
               <div class="chap-info">
-                <span class="chap-num">01</span>
+                <div class="chap-num">01</div>
                 <div class="chap-text">
                   <h4>BAL KAND</h4>
                   <p>The Beginning</p>
                 </div>
               </div>
               <div class="chap-progress">
-                <div class="progress-dots">● ● ● ○ ○</div>
-                <p>3 / 5 complete →</p>
+                <span>3 / 5 LEVELS</span>
+                <span style="color:var(--gold);">★★★</span>
               </div>
             </div>
             
             <div class="chapter-card locked">
               <div class="chap-info">
-                <span class="chap-num">02</span>
+                <div class="chap-num">02</div>
                 <div class="chap-text">
-                  <h4>KISHKINDHA</h4>
+                  <h4>AYODHYA KAND</h4>
                   <p>Coming Soon</p>
                 </div>
-              </div>
-              <div class="chap-progress">
-                <span class="lock-icon">🔒</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Level Select -->
+        <!-- Level Selection -->
         <div id="level-select-menu" class="screen">
           <div class="screen-header">
-            <button class="icon-btn back-btn" id="btn-back-levels">←</button>
+            <button class="icon-btn" id="btn-back-levels">←</button>
             <div class="header-titles">
               <h3>BAL KAND</h3>
               <p>The Beginning</p>
             </div>
           </div>
-          <div class="level-progress-bar">
-            <p>3 / 5 completed</p>
-            <div class="bar-bg"><div class="bar-fill" style="width:60%"></div></div>
-          </div>
+          
           <div class="scroll-container">
+            <div class="level-progress-bar">
+              <div style="display:flex; justify-content:space-between;">
+                <span>PROGRESS</span>
+                <span>60%</span>
+              </div>
+              <div class="bar-bg">
+                <div class="bar-fill" style="width:60%;"></div>
+              </div>
+            </div>
+            
             <div id="levels-grid" class="levels-grid">
-              <!-- Generated by JS -->
+              <!-- Dynamically populated by Game.js -->
             </div>
           </div>
         </div>
-        
-        <!-- How to play -->
+
+        <!-- How To Play -->
         <div id="how-to-play" class="screen">
-           <div class="screen-header">
-            <button class="icon-btn back-btn" id="btn-back-how">←</button>
+          <div class="screen-header">
+            <button class="icon-btn" id="btn-back-how">←</button>
             <div class="header-titles">
               <h3>HOW TO PLAY</h3>
-              <p>THINK DIFFERENTLY.</p>
+              <p>Instructions</p>
             </div>
           </div>
+          
           <div class="scroll-container">
-            <div class="htp-card"><span class="htp-num">01</span><div><h4>LOOK</h4><p>Observe everything carefully.</p></div></div>
-            <div class="htp-card"><span class="htp-num">02</span><div><h4>TRY</h4><p>Drag, tap and interact with objects.</p></div></div>
-            <div class="htp-card"><span class="htp-num">03</span><div><h4>THINK</h4><p>The obvious answer isn't always right.</p></div></div>
-            <div class="htp-card"><span class="htp-num">04</span><div><h4>SOLVE</h4><p>Find the unexpected solution.</p></div></div>
+            <div class="htp-card">
+              <div class="htp-num">1</div>
+              <div>
+                <h4>LOOK</h4>
+                <p>Observe everything carefully.</p>
+              </div>
+            </div>
+            <div class="htp-card">
+              <div class="htp-num">2</div>
+              <div>
+                <h4>DRAG</h4>
+                <p>Move objects around.</p>
+              </div>
+            </div>
+            <div class="htp-card">
+              <div class="htp-num">3</div>
+              <div>
+                <h4>THINK</h4>
+                <p>Try unexpected solutions.</p>
+              </div>
+            </div>
+            <div class="htp-card">
+              <div class="htp-num">4</div>
+              <div>
+                <h4>SOLVE</h4>
+                <p>Find the hidden answer.</p>
+              </div>
+            </div>
           </div>
         </div>
 
         <!-- HUD (Game play) -->
         <div id="hud" class="screen transparent-screen">
           <!-- Game Header dynamically handled by Game.js -->
+          <!-- Dialog Box -->
+          <div id="dialog-box">
+            <p id="dialog-text" class="dialog-text"></p>
+          </div>
+        </div>
+
+        <!-- Pause Menu -->
+        <div id="pause-menu" class="screen">
+          <div class="wood-panel" style="margin: auto; width: 90%; max-width: 320px; text-align: center;">
+            <h2 style="font-family: 'Cinzel', serif; color: var(--maroon); margin-bottom: 20px;">PAUSED</h2>
+            <div style="display:flex; flex-direction:column; gap:15px;">
+              <button id="btn-resume" class="btn-primary"><span class="btn-title" style="font-size:1.2rem;">RESUME</span></button>
+              <button id="btn-restart" class="btn-secondary">RESTART LEVEL</button>
+              <button id="btn-quit" class="btn-secondary">MAIN MENU</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="screen">
+          <div class="wood-panel" style="margin: auto; width: 90%; max-width: 350px; text-align: center;">
+            <h2 id="result-title" style="color: var(--saffron); font-family: 'Cinzel', serif; font-size: 2rem; margin-bottom: 15px; text-shadow: 1px 2px 0 var(--brown);">LEVEL COMPLETE</h2>
+            <p id="result-stars" style="font-size: 2.5rem; color: var(--gold); margin: 15px 0;">⭐⭐⭐</p>
+            <p id="result-wisdom" style="font-size: 1.2rem; color: var(--brown); margin-bottom: 25px; font-weight: bold;">+100 Wisdom</p>
+            <button id="btn-next-level" class="btn-primary"><span class="btn-title" style="font-size:1.4rem;">CONTINUE</span></button>
+          </div>
         </div>
 
       </div>

@@ -32,7 +32,10 @@ export class AssetManager {
   }
   
   loadTexture(name, path) {
-    this.textureLoader.load(path, (tex) => {
+    const basePath = import.meta.env.BASE_URL || '/';
+    const fullPath = path.startsWith('/') ? basePath + path.slice(1) : basePath + path;
+    
+    this.textureLoader.load(fullPath, (tex) => {
       tex.colorSpace = THREE.SRGBColorSpace;
       this.textures[name] = tex;
     });
