@@ -83,16 +83,19 @@ export class Game {
 
     this.chapters = [
       { id: 1, name: 'VANVAS', subtitle: 'The Forest Journey', locked: false },
-      { id: 2, name: 'BAL KAND', subtitle: 'Coming Soon', locked: true }
+      { id: 2, name: 'BAL KAND', subtitle: 'The Beginning', locked: false }
     ];
 
     this.levels = [
-      { id: 1, name: 'The First Arrow', hint: 'Watch where the arrow needs to go.', completed: true, chapter: 1 },
-      { id: 2, name: 'The Training Target', hint: 'Look carefully at the target.', completed: true, chapter: 1 },
-      { id: 3, name: 'The Sun and Hanuman', hint: 'Give Hanuman the fruit.', completed: true, chapter: 1 },
-      { id: 4, name: 'Build the Bridge', hint: 'Not every stone belongs to the bridge.', completed: true, chapter: 1 },
-      { id: 5, name: 'The Golden Deer', hint: 'Only one deer is your target.', completed: true, chapter: 1 },
-      { id: 6, name: 'Ravan Vadh', hint: 'Ravan has a hidden weak point. Find it.', completed: false, current: true, chapter: 1 }
+      // Chapter 1 (VANVAS) - First chapter in order
+      { id: 3, name: 'The Sun and Hanuman', hint: 'Give Hanuman the fruit.', completed: false, current: true, chapter: 1 },
+      { id: 4, name: 'Build the Bridge', hint: 'Not every stone belongs to the bridge.', completed: false, chapter: 1 },
+      { id: 5, name: 'The Golden Deer', hint: 'Only one deer is your target.', completed: false, chapter: 1 },
+      { id: 6, name: 'Ravan Vadh', hint: 'Ravan has a hidden weak point. Find it.', completed: false, chapter: 1 },
+
+      // Chapter 2 (BAL KAND) - Level 1 and Level 2 locked by default
+      { id: 1, name: 'The First Arrow', hint: 'Watch where the arrow needs to go.', completed: false, lockedByDefault: true, chapter: 2 },
+      { id: 2, name: 'The Training Target', hint: 'Look carefully at the target.', completed: false, lockedByDefault: true, chapter: 2 }
     ];
     this.currentChapter = 1;
     
@@ -335,9 +338,13 @@ export class Game {
   }
 
   resetAllProgress() {
-    this.levels.forEach((l, index) => {
+    this.closeSidebar();
+    this.levels.forEach(l => {
       l.completed = false;
-      l.current = (index === 0);
+      l.current = (l.id === 3);
+      if (l.chapter === 2) {
+        l.lockedByDefault = true;
+      }
     });
     this.hintCredits = 20;
     this.saveProgress();
@@ -372,9 +379,9 @@ export class Game {
       const dotClass = isLocked ? 'locked' : (progress.percentage === 100 ? 'completed' : 'current');
       const dotContent = isLocked ? '🔒' : (progress.percentage === 100 ? '✓' : '');
       
-      const subtitleText = isLocked ? 'Coming Soon' : chap.subtitle;
+      const subtitleText = chap.subtitle;
       const progressText = isLocked 
-        ? `<span style="color:var(--text-light); font-weight:700;">COMING SOON</span>`
+        ? `<span style="color:var(--text-light); font-weight:700;">LOCKED</span>`
         : `<span>${progress.completed} / ${progress.total} LEVELS</span>
            <span style="color:var(--gold);">${progress.percentage === 100 ? '★★★' : ''}</span>`;
       
@@ -451,7 +458,7 @@ export class Game {
         dotClass = 'completed';
         dotContent = '✓';
         contentClass = '';
-      } else if (level.current || (index === 0 && progress.completed === 0) || (index > 0 && chapterLevels[index-1].completed)) {
+      } else if (!level.lockedByDefault && (level.current || (index === 0 && progress.completed === 0) || (index > 0 && chapterLevels[index-1].completed))) {
         // Unlock if it's the first level, or previous is completed, or explicitly marked current
         dotClass = 'current';
         dotContent = '';
@@ -462,7 +469,7 @@ export class Game {
       
       el.innerHTML = `
         <div class="node-content ${contentClass}">
-          <h4 style="font-size: 1.1rem; margin-bottom: 2px;">Level ${level.id}</h4>
+          <h4 style="font-size: 1.1rem; margin-bottom: 2px;">Level ${index + 1}</h4>
           <p style="font-size: 1.3rem; color: var(--text-title); margin-bottom: 5px;">${level.name}</p>
           <div class="node-progress">
             <span>${dotClass === 'locked' ? 'Locked' : (dotClass === 'completed' ? 'Completed' : 'Current')}</span>
@@ -524,10 +531,13 @@ export class Game {
     this.headerEl.style.zIndex = '100';
     this.headerEl.style.pointerEvents = 'auto';
     
+    const chapterLevels = this.levels.filter(l => l.chapter === config.chapter);
+    const levelNumber = chapterLevels.findIndex(l => l.id === config.id) + 1;
+
     this.headerEl.innerHTML = `
         <button id="hud-back" class="icon-btn" style="width: 40px; height: 40px; font-size: 1.2rem; border-radius: 12px; margin: 0; padding: 0;">←</button>
         <div style="text-align: center; flex: 1;">
-          <div style="font-size: 10px; font-weight: 700; color: var(--gold); letter-spacing: 1px;">LEVEL ${config.id}</div>
+          <div style="font-size: 10px; font-weight: 700; color: var(--gold); letter-spacing: 1px;">LEVEL ${levelNumber > 0 ? levelNumber : config.id}</div>
           <div style="font-size: 15px; font-weight: 700; color: var(--maroon); font-family: var(--font-display); text-transform: uppercase;">${config.name}</div>
         </div>
         <button id="hud-hint" class="btn-primary" style="padding: 5px 12px; width: auto; border-radius: 12px; border-width: 2px;">
@@ -603,11 +613,11 @@ export class Game {
       currentLevelConfig.completed = true;
       currentLevelConfig.current = false;
       
-      // Update logic for next level unlocking
-      const nextLevel = this.levels.find(l => l.id === levelId + 1);
-      if (nextLevel) {
-        nextLevel.locked = false;
-        nextLevel.current = true;
+      const chapterLevels = this.levels.filter(l => l.chapter === currentLevelConfig.chapter);
+      const currentIndex = chapterLevels.findIndex(l => l.id === levelId);
+      if (currentIndex >= 0 && currentIndex + 1 < chapterLevels.length) {
+        chapterLevels[currentIndex + 1].lockedByDefault = false;
+        chapterLevels[currentIndex + 1].current = true;
       }
       this.saveProgress();
     }
@@ -631,7 +641,7 @@ export class Game {
         <p style="color: var(--forest-green); font-size: 1.2rem; margin-bottom: 25px; font-weight: bold; background: rgba(255,255,255,0.5); padding: 5px 15px; border-radius: 20px; display: inline-block;">+20 Credits</p>
         <button id="btn-victory-next" class="btn-primary" style="width: 100%;"><span class="btn-title" style="font-size:1.4rem;">NEXT LEVEL ➔</span></button>
       </div>
-      <style>@keyframes scaleIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }</style>
+      <style>@keyframes scaleIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); } }</style>
     `;
     document.getElementById('hud').appendChild(overlay);
 
@@ -646,18 +656,14 @@ export class Game {
   }
 
   goToNextLevel() {
-    const nextLevel = this.levels.find(l => l.id === this.currentLevel + 1);
+    const chapterLevels = this.levels.filter(l => l.chapter === this.currentChapter);
+    const currentIndex = chapterLevels.findIndex(l => l.id === this.currentLevel);
+    const nextLevel = currentIndex >= 0 && currentIndex + 1 < chapterLevels.length ? chapterLevels[currentIndex + 1] : null;
     
     if (nextLevel) {
-      if (nextLevel.chapter !== this.currentChapter) {
-         this.currentChapter = nextLevel.chapter;
-         this.renderChapterSelect();
-         this.showScreen('chapter-menu');
-      } else {
-         this.startGame(nextLevel.id);
-      }
+      this.startGame(nextLevel.id);
     } else {
-      // Game complete or last chapter complete
+      // Chapter complete
       if (this.currentLevelObj && this.currentLevelObj.cleanup) this.currentLevelObj.cleanup();
       this.scene.children = this.scene.children.filter(c => !c.isLevelObject);
       

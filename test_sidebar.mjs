@@ -72,8 +72,9 @@ async function testSidebar() {
 
   // Test Reset Progress Modal
   console.log('\n5. Testing Reset Progress Modal...');
+  await page.waitForSelector('#btn-open-reset-modal', { timeout: 2000 });
   await page.$eval('#btn-open-reset-modal', el => el.scrollIntoView({ block: 'center' }));
-  await new Promise(r => setTimeout(r, 200));
+  await new Promise(r => setTimeout(r, 300));
   await page.click('#btn-open-reset-modal');
   await page.waitForSelector('#reset-confirm-modal.active', { timeout: 2000 });
   await new Promise(r => setTimeout(r, 300));
