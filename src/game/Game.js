@@ -519,54 +519,41 @@ export class Game {
     this.headerEl = document.createElement('header');
     this.headerEl.className = 'game-header wood-panel';
     
-    // Header container styles for HUD
-    this.headerEl.style.position = 'absolute';
-    this.headerEl.style.top = 'env(safe-area-inset-top, 10px)';
-    this.headerEl.style.left = '10px';
-    this.headerEl.style.right = '10px';
-    this.headerEl.style.display = 'flex';
-    this.headerEl.style.justifyContent = 'space-between';
-    this.headerEl.style.alignItems = 'center';
-    this.headerEl.style.padding = '12px 15px';
-    this.headerEl.style.zIndex = '100';
-    this.headerEl.style.pointerEvents = 'auto';
-    
     const chapterLevels = this.levels.filter(l => l.chapter === config.chapter);
     const levelNumber = chapterLevels.findIndex(l => l.id === config.id) + 1;
 
     this.headerEl.innerHTML = `
-        <button id="hud-back" class="icon-btn" style="width: 40px; height: 40px; font-size: 1.2rem; border-radius: 12px; margin: 0; padding: 0;">←</button>
-        <div style="text-align: center; flex: 1;">
-          <div style="font-size: 10px; font-weight: 700; color: var(--gold); letter-spacing: 1px;">LEVEL ${levelNumber > 0 ? levelNumber : config.id}</div>
-          <div style="font-size: 15px; font-weight: 700; color: var(--maroon); font-family: var(--font-display); text-transform: uppercase;">${config.name}</div>
+        <button id="hud-back" class="icon-btn" style="width: 40px; height: 40px; font-size: 1.2rem; border-radius: 12px; margin: 0; padding: 0;" aria-label="Back">←</button>
+        <div style="text-align: center; flex: 1; margin: 0 10px;">
+          <div style="font-size: 11px; font-weight: 800; color: var(--gold); letter-spacing: 1px;">LEVEL ${levelNumber > 0 ? levelNumber : config.id}</div>
+          <div style="font-size: 15px; font-weight: 800; color: var(--maroon); font-family: var(--font-display); text-transform: uppercase;">${config.name}</div>
         </div>
-        <button id="hud-hint" class="btn-primary" style="padding: 5px 12px; width: auto; border-radius: 12px; border-width: 2px;">
-          <span class="btn-title" style="font-size: 0.9rem;">💡 <span id="hud-hint-count">${this.hintCredits}</span></span>
+        <button id="hud-hint" class="btn-primary" style="padding: 6px 14px; width: auto; border-radius: 14px; border-width: 2px;" aria-label="Hint">
+          <span class="btn-title" style="font-size: 0.95rem; display: flex; align-items: center; gap: 4px;">💡 <span id="hud-hint-count">${this.hintCredits}</span></span>
         </button>
     `;
     
     document.getElementById('hud').appendChild(this.headerEl);
     
-    // Hint Panel
-    this.hintPanel = document.createElement('div');
-    this.hintPanel.className = 'wood-panel';
-    this.hintPanel.style.position = 'absolute';
-    this.hintPanel.style.top = 'calc(env(safe-area-inset-top, 10px) + 80px)';
-    this.hintPanel.style.left = '10px';
-    this.hintPanel.style.right = '10px';
-    this.hintPanel.style.padding = '15px';
-    this.hintPanel.style.zIndex = '99';
-    this.hintPanel.style.pointerEvents = 'auto';
-    this.hintPanel.style.opacity = '0';
-    this.hintPanel.style.visibility = 'hidden';
-    this.hintPanel.style.transform = 'translateY(-10px)';
-    this.hintPanel.style.transition = 'all 0.25s ease';
+    // Hint Panel Container (Solid & Independent)
+    this.hintContainer = document.createElement('div');
+    this.hintContainer.className = 'hint-panel-container';
     
-    this.hintPanel.innerHTML = `
-      <div style="font-weight: bold; color: var(--saffron); font-size: 0.9rem; margin-bottom: 5px;">💡 HINT</div>
-      <div style="color: var(--brown); font-weight: 500; font-size: 1rem;">${config.hint}</div>
+    this.hintContainer.innerHTML = `
+      <div id="game-hint-card" class="game-hint-card">
+        <div class="hint-card-header">
+          <div class="hint-title-group">
+            <span class="hint-badge-icon">💡</span>
+            <span class="hint-title-text">HINT</span>
+          </div>
+          <button id="btn-close-hint" class="hint-close-btn" aria-label="Close Hint">✕</button>
+        </div>
+        <div class="hint-card-body">${config.hint}</div>
+      </div>
     `;
-    document.getElementById('hud').appendChild(this.hintPanel);
+    document.getElementById('hud').appendChild(this.hintContainer);
+
+    this.hintPanel = document.getElementById('game-hint-card');
 
     document.getElementById('hud-back').addEventListener('click', () => {
       if (this.currentLevelObj && this.currentLevelObj.cleanup) {
@@ -577,31 +564,50 @@ export class Game {
     });
     
     document.getElementById('hud-hint').addEventListener('click', () => {
-      const isVisible = this.hintPanel.style.opacity === '1';
-      if (!isVisible && this.hintCredits > 0) {
-        if (!this.hintPanel.dataset.used) {
-          this.hintCredits--;
-          document.getElementById('hud-hint-count').textContent = this.hintCredits;
-          this.hintPanel.dataset.used = 'true';
-        }
-        this.hintPanel.style.opacity = '1';
-        this.hintPanel.style.visibility = 'visible';
-        this.hintPanel.style.transform = 'translateY(0)';
-      } else {
-        this.hintPanel.style.opacity = '0';
-        this.hintPanel.style.visibility = 'hidden';
-        this.hintPanel.style.transform = 'translateY(-10px)';
-      }
+      this.toggleHint();
+    });
+
+    document.getElementById('btn-close-hint').addEventListener('click', () => {
+      this.hideHint();
     });
   }
-  
+
+  toggleHint() {
+    if (!this.hintPanel) return;
+    const isVisible = this.hintPanel.classList.contains('active');
+    if (isVisible) {
+      this.hideHint();
+    } else {
+      this.showHint();
+    }
+  }
+
+  showHint() {
+    if (!this.hintPanel) return;
+    if (this.hintCredits > 0) {
+      if (!this.hintPanel.dataset.used) {
+        this.hintCredits--;
+        this.updateHintsDisplay();
+        this.saveProgress();
+        this.hintPanel.dataset.used = 'true';
+      }
+      this.hintPanel.classList.add('active');
+    }
+  }
+
+  hideHint() {
+    if (!this.hintPanel) return;
+    this.hintPanel.classList.remove('active');
+  }
+
   removeHeader() {
     if (this.headerEl) {
       this.headerEl.remove();
       this.headerEl = null;
     }
-    if (this.hintPanel) {
-      this.hintPanel.remove();
+    if (this.hintContainer) {
+      this.hintContainer.remove();
+      this.hintContainer = null;
       this.hintPanel = null;
     }
   }
@@ -622,36 +628,37 @@ export class Game {
       this.saveProgress();
     }
 
-    // Show elegant success overlay
+    // Hide hint if open
+    this.hideHint();
+
+    // Show solid & highly readable victory overlay
     const overlay = document.createElement('div');
-    overlay.style.position = 'absolute';
-    overlay.style.inset = '0';
-    overlay.style.background = 'rgba(0,0,0,0.6)';
-    overlay.style.backdropFilter = 'blur(4px)';
-    overlay.style.display = 'flex';
-    overlay.style.alignItems = 'center';
-    overlay.style.justifyContent = 'center';
-    overlay.style.zIndex = '300';
-    overlay.style.pointerEvents = 'auto';
+    overlay.className = 'victory-overlay';
+    overlay.id = 'victory-overlay';
+    
     overlay.innerHTML = `
-      <div class="wood-panel" style="animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); text-align: center; padding: 40px 50px; width: 90%; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
-        <div style="font-size: 4rem; text-shadow: 0 4px 10px rgba(0,0,0,0.2); margin-bottom: 10px;">✨</div>
-        <h2 style="color: var(--maroon); font-family: var(--font-display); font-size: 2.4rem; text-shadow: 1px 1px 0 rgba(255,255,255,0.8);">LEVEL COMPLETE!</h2>
-        <p style="color: var(--text-title); font-size: 1.6rem; font-weight: 800; margin: 15px 0;">${currentLevelConfig ? currentLevelConfig.name : 'Success'}</p>
-        <p style="color: var(--forest-green); font-size: 1.2rem; margin-bottom: 25px; font-weight: bold; background: rgba(255,255,255,0.5); padding: 5px 15px; border-radius: 20px; display: inline-block;">+20 Credits</p>
-        <button id="btn-victory-next" class="btn-primary" style="width: 100%;"><span class="btn-title" style="font-size:1.4rem;">NEXT LEVEL ➔</span></button>
+      <div class="victory-card">
+        <div class="victory-stars-box">🏆</div>
+        <h2 class="victory-title">LEVEL COMPLETE!</h2>
+        <p class="victory-level-name">${currentLevelConfig ? currentLevelConfig.name : 'Success'}</p>
+        <div class="victory-reward-pill">
+          <span>✨</span>
+          <span>+20 Hint Credits</span>
+        </div>
+        <button id="btn-victory-next" class="btn-primary victory-action-btn">
+          <span class="btn-title" style="font-size:1.35rem;">NEXT LEVEL ➔</span>
+        </button>
       </div>
-      <style>@keyframes scaleIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); } }</style>
     `;
     document.getElementById('hud').appendChild(overlay);
 
     document.getElementById('btn-victory-next').addEventListener('click', () => {
-      overlay.style.transition = 'opacity 0.4s ease';
+      overlay.style.transition = 'opacity 0.3s ease';
       overlay.style.opacity = '0';
       setTimeout(() => {
         overlay.remove();
         this.goToNextLevel();
-      }, 400);
+      }, 300);
     });
   }
 

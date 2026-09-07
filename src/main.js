@@ -3,6 +3,7 @@ import { Game } from './game/Game.js';
 const init = () => {
   try {
     const game = new Game();
+    window.game = game;
     game.init();
   } catch (err) {
     console.error('Fatal initialization error:', err);

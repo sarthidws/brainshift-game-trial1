@@ -980,3 +980,229 @@ canvas {
   to { transform: scale(1); opacity: 1; }
 }
 
+/* ===================================================
+   WOOD / GAME PANELS & HUD
+   =================================================== */
+.wood-panel {
+  background: linear-gradient(180deg, #FFFFFF 0%, #FFFDF7 100%);
+  border: 3px solid var(--brown);
+  border-radius: 24px;
+  box-shadow: 
+    inset 0 2px 0 #FFFFFF,
+    0 12px 30px rgba(0, 0, 0, 0.28);
+  position: relative;
+  box-sizing: border-box;
+}
+
+.game-header {
+  position: absolute;
+  top: max(10px, env(safe-area-inset-top, 10px));
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  z-index: 100;
+  pointer-events: auto;
+  border-radius: 20px;
+}
+
+/* ===================================================
+   HINT PANEL MODAL / OVERLAY
+   =================================================== */
+.hint-panel-container {
+  position: absolute;
+  top: calc(max(10px, env(safe-area-inset-top, 10px)) + 68px);
+  left: 12px;
+  right: 12px;
+  z-index: 120;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.game-hint-card {
+  background: linear-gradient(180deg, #FFFFFF 0%, #FFFDF5 100%);
+  border: 3px solid var(--orange-main);
+  border-radius: 22px;
+  box-shadow: 
+    inset 0 2px 0 #FFFFFF,
+    0 16px 36px rgba(0, 0, 0, 0.35);
+  padding: 18px 20px;
+  width: 100%;
+  max-width: 420px;
+  pointer-events: auto;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-12px) scale(0.96);
+  transition: 
+    opacity 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    transform 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    visibility 0.28s;
+}
+
+.game-hint-card.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+.hint-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid rgba(255, 152, 0, 0.2);
+}
+
+.hint-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hint-badge-icon {
+  font-size: 1.3rem;
+  background: #FFF3E0;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--orange-light);
+}
+
+.hint-title-text {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: var(--maroon);
+  letter-spacing: 0.5px;
+}
+
+.hint-close-btn {
+  background: #ECEFF1;
+  border: 2px solid #CFD8DC;
+  border-radius: 10px;
+  width: 32px;
+  height: 32px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  touch-action: manipulation;
+}
+
+.hint-close-btn:active {
+  transform: scale(0.92);
+  background: #CFD8DC;
+}
+
+.hint-card-body {
+  color: #2D3748;
+  font-weight: 700;
+  font-size: 1.05rem;
+  line-height: 1.45;
+  padding: 4px 2px;
+}
+
+/* ===================================================
+   LEVEL COMPLETION POPUP (SOLID & OPAQUE)
+   =================================================== */
+.victory-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  pointer-events: auto;
+  padding: 20px;
+  opacity: 0;
+  animation: fadeInOverlay 0.3s forwards ease;
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.victory-card {
+  background: linear-gradient(180deg, #FFFFFF 0%, #FFFDF7 100%);
+  border: 4px solid var(--brown);
+  border-radius: 28px;
+  box-shadow: 
+    inset 0 3px 0 rgba(255,255,255,1),
+    0 24px 50px rgba(0, 0, 0, 0.5);
+  text-align: center;
+  padding: 36px 28px;
+  width: 100%;
+  max-width: 380px;
+  box-sizing: border-box;
+  animation: scaleVictory 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes scaleVictory {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.victory-stars-box {
+  font-size: 3.5rem;
+  line-height: 1;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 4px 8px rgba(255, 193, 7, 0.4));
+  animation: bounceStar 0.8s ease infinite alternate;
+}
+
+@keyframes bounceStar {
+  from { transform: translateY(0) scale(1); }
+  to { transform: translateY(-4px) scale(1.05); }
+}
+
+.victory-title {
+  color: var(--maroon);
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  text-shadow: 0 1px 0 rgba(255,255,255,0.8);
+  line-height: 1.15;
+  margin-bottom: 6px;
+}
+
+.victory-level-name {
+  color: var(--text-title);
+  font-size: 1.35rem;
+  font-weight: 800;
+  margin-bottom: 18px;
+}
+
+.victory-reward-pill {
+  background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+  border: 2px solid #81C784;
+  color: #1B5E20;
+  font-size: 1.15rem;
+  font-weight: 800;
+  padding: 8px 22px;
+  border-radius: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 26px;
+  box-shadow: 0 4px 10px rgba(76, 175, 80, 0.2);
+}
+
+.victory-action-btn {
+  width: 100%;
+  padding: 16px 20px;
+}
+
+
