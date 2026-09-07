@@ -407,6 +407,8 @@ body {
 #main-menu {
   background: transparent;
   backdrop-filter: none;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .home-top-bar {
@@ -491,6 +493,16 @@ canvas {
     flex: unset;
     margin: auto 0;
   }
+}
+
+/* Fix for short screens (landscape or heavily cropped mobile) */
+@media (max-height: 700px) {
+  .home-hero h1 { font-size: 2.2rem; }
+  .home-hero h2 { font-size: 1.5rem; }
+  .home-hero-title { padding: 10px 15px; margin-bottom: 5px; }
+  .btn-primary { padding: 12px; }
+  .btn-primary .btn-title { font-size: 1.2rem; }
+  .btn-secondary { padding: 10px; font-size: 0.9rem; }
 }
 
 /* Journey Map Styles */
