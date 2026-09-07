@@ -21,7 +21,7 @@ export class BalKandLevel3 {
     this.game.camera.position.set(0, 0, 10);
     
     // Background
-    const bgGeo = new THREE.PlaneGeometry(60, 30); // Or calculate aspect
+    const bgGeo = new THREE.PlaneGeometry(150, 150); // Scaled up to cover mobile screens
     const bgMat = this.game.assetManager.getTextureMaterial('level3bg');
     this.bg = new THREE.Mesh(bgGeo, bgMat);
     this.bg.position.set(0, 0, -5);

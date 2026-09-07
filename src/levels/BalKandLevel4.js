@@ -27,7 +27,7 @@ export class BalKandLevel4 {
     this.game.camera.position.set(0, 0, 10);
     
     // White background
-    this.bgGeo = new THREE.PlaneGeometry(60, 40);
+    this.bgGeo = new THREE.PlaneGeometry(150, 150);
     this.bgMat = new THREE.MeshBasicMaterial({ color: 0xFFF9F0 });
     this.bg = new THREE.Mesh(this.bgGeo, this.bgMat);
     this.bg.position.set(0, 0, -5);

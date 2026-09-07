@@ -25,7 +25,7 @@ export class BalKandLevel1 {
     this.game.camera.position.set(0, 0, 10);
     
     // Environment
-    const floorGeo = new THREE.PlaneGeometry(60, 30);
+    const floorGeo = new THREE.PlaneGeometry(150, 150);
     const floorMat = this.game.assetManager.getTextureMaterial('background');
     const floor = new THREE.Mesh(floorGeo, floorMat);
     floor.position.set(0, 0, -5);

@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 
 export class AssetManager {
-  constructor() {
-    this.textureLoader = new THREE.TextureLoader();
+  constructor(onLoadCallback) {
+    this.loadingManager = new THREE.LoadingManager(onLoadCallback);
+    this.textureLoader = new THREE.TextureLoader(this.loadingManager);
     this.textures = {};
     
     // Load individual assets
@@ -21,6 +22,10 @@ export class AssetManager {
     this.loadTexture('simple_stone_1', '/assets/bal-kand/simple_stone_1.png');
     this.loadTexture('simple_stone_2', '/assets/bal-kand/simple_stone_2.png');
     this.loadTexture('water_river', '/assets/bal-kand/water_river.png');
+    
+    // Level 6 Assets
+    this.loadTexture('ram_bow', '/assets/bal-kand/ram_with_bow_img.png');
+    this.loadTexture('ravan', '/assets/bal-kand/rawna.png');
 
     // Level 5 Assets
     this.loadTexture('golden_deer', '/assets/bal-kand/level_5/golden_deer.png');
