@@ -1,8 +1,12 @@
 import { Game } from './game/Game.js';
 
 const init = () => {
-  const game = new Game();
-  game.init();
+  try {
+    const game = new Game();
+    game.init();
+  } catch (err) {
+    console.error('Fatal initialization error:', err);
+  }
 };
 
 if (document.readyState === 'loading') {

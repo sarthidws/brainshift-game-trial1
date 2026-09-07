@@ -27,8 +27,38 @@ export class Game {
     this.camera = new THREE.OrthographicCamera(-frustumWidth / 2, frustumWidth / 2, frustumHeight / 2, -frustumHeight / 2, 0.1, 1000);
     this.camera.position.set(0, 0, 10);
     
-    this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true });
-    this.renderer.setSize(width, height);
+    this.webglDisabled = false;
+    try {
+      this.renderer = new THREE.WebGLRenderer({ 
+        canvas: this.canvas, 
+        antialias: true, 
+        alpha: true,
+        powerPreference: 'default'
+      });
+    } catch (e1) {
+      console.warn('Primary WebGLRenderer creation failed, attempting low-power fallback...', e1);
+      try {
+        this.renderer = new THREE.WebGLRenderer({ 
+          canvas: this.canvas, 
+          antialias: false, 
+          alpha: true,
+          powerPreference: 'low-power',
+          failIfMajorPerformanceCaveat: false
+        });
+      } catch (e2) {
+        console.warn('WebGL is disabled or unavailable in this browser environment:', e2);
+        this.webglDisabled = true;
+        this.renderer = {
+          setSize: () => {},
+          render: () => {},
+          domElement: this.canvas
+        };
+      }
+    }
+
+    if (this.renderer && this.renderer.setSize) {
+      this.renderer.setSize(width, height);
+    }
     
     this.inputManager = new InputManager();
     this.assetManager = new AssetManager(() => {
@@ -52,27 +82,64 @@ export class Game {
     this.hintCredits = 20;
 
     this.chapters = [
-      { id: 1, name: 'BAL KAND', subtitle: 'The Beginning' },
-      { id: 2, name: 'VANVAS', subtitle: 'The Forest Journey' }
+      { id: 1, name: 'VANVAS', subtitle: 'The Forest Journey', locked: false },
+      { id: 2, name: 'BAL KAND', subtitle: 'Coming Soon', locked: true }
     ];
 
     this.levels = [
       { id: 1, name: 'The First Arrow', hint: 'Watch where the arrow needs to go.', completed: true, chapter: 1 },
       { id: 2, name: 'The Training Target', hint: 'Look carefully at the target.', completed: true, chapter: 1 },
-      { id: 3, name: 'The Sun and Hanuman', hint: 'Give Hanuman the fruit.', completed: true, chapter: 2 },
-      { id: 4, name: 'Build the Bridge', hint: 'Not every stone belongs to the bridge.', completed: true, chapter: 2 },
-      { id: 5, name: 'The Golden Deer', hint: 'Only one deer is your target.', completed: true, chapter: 2 },
-      { id: 6, name: 'Ravan Vadh', hint: 'Ravan has a hidden weak point. Find it.', completed: false, current: true, chapter: 2 }
+      { id: 3, name: 'The Sun and Hanuman', hint: 'Give Hanuman the fruit.', completed: true, chapter: 1 },
+      { id: 4, name: 'Build the Bridge', hint: 'Not every stone belongs to the bridge.', completed: true, chapter: 1 },
+      { id: 5, name: 'The Golden Deer', hint: 'Only one deer is your target.', completed: true, chapter: 1 },
+      { id: 6, name: 'Ravan Vadh', hint: 'Ravan has a hidden weak point. Find it.', completed: false, current: true, chapter: 1 }
     ];
     this.currentChapter = 1;
     
+    this.loadProgress();
+
     window.addEventListener('resize', () => this.onWindowResize());
+  }
+  
+  loadProgress() {
+    try {
+      const saved = localStorage.getItem('ramayan_game_progress');
+      if (saved) {
+        const data = JSON.parse(saved);
+        if (data && data.levels && Array.isArray(data.levels)) {
+          data.levels.forEach(savedLevel => {
+            const level = this.levels.find(l => l.id === savedLevel.id);
+            if (level && typeof savedLevel.completed === 'boolean') {
+              level.completed = savedLevel.completed;
+            }
+          });
+        }
+        if (data && typeof data.hintCredits === 'number') {
+          this.hintCredits = data.hintCredits;
+        }
+      }
+    } catch (e) {
+      console.warn('LocalStorage not available or error loading:', e);
+    }
+  }
+
+  saveProgress() {
+    try {
+      const data = {
+        levels: this.levels.map(l => ({ id: l.id, completed: l.completed })),
+        hintCredits: this.hintCredits
+      };
+      localStorage.setItem('ramayan_game_progress', JSON.stringify(data));
+    } catch (e) {
+      console.warn('LocalStorage not available or error saving:', e);
+    }
   }
   
   onWindowResize() {
     const app = document.getElementById('app');
-    const width = app.clientWidth;
-    const height = app.clientHeight;
+    if (!app) return;
+    const width = app.clientWidth || window.innerWidth;
+    const height = app.clientHeight || window.innerHeight;
     const aspect = width / height;
     
     let frustumWidth = 26;
@@ -82,13 +149,16 @@ export class Game {
       frustumWidth = frustumHeight * aspect;
     }
     
-    this.camera.left = -frustumWidth / 2;
-    this.camera.right = frustumWidth / 2;
-    this.camera.top = frustumHeight / 2;
-    this.camera.bottom = -frustumHeight / 2;
-    
-    this.camera.updateProjectionMatrix();
-    this.renderer.setSize(width, height);
+    if (this.camera) {
+      this.camera.left = -frustumWidth / 2;
+      this.camera.right = frustumWidth / 2;
+      this.camera.top = frustumHeight / 2;
+      this.camera.bottom = -frustumHeight / 2;
+      this.camera.updateProjectionMatrix();
+    }
+    if (this.renderer && this.renderer.setSize) {
+      this.renderer.setSize(width, height);
+    }
   }
   
   init() {
@@ -96,13 +166,54 @@ export class Game {
     const loader = document.getElementById('loading-screen');
     if (loader) loader.classList.remove('active');
     
-    // Splash screen transitions to main menu via setupUI timeout
     this.animate();
   }
   
   setupUI() {
+    this.updateHintsDisplay();
+
+    // Sound and Music States
+    this.soundEnabled = true;
+    this.musicEnabled = true;
+    this.language = 'en';
+
+    // Sidebar triggers
+    document.getElementById('btn-menu')?.addEventListener('click', () => this.openSidebar());
+    document.getElementById('btn-close-sidebar')?.addEventListener('click', () => this.closeSidebar());
+    document.getElementById('sidebar-overlay')?.addEventListener('click', () => this.closeSidebar());
+
+    // Sidebar navigation items
+    document.getElementById('nav-home')?.addEventListener('click', () => {
+      this.closeSidebar();
+      this.showScreen('main-menu');
+    });
+
+    document.getElementById('nav-levels')?.addEventListener('click', () => {
+      this.closeSidebar();
+      this.renderChapterSelect();
+      this.showScreen('chapter-menu');
+    });
+
+    document.getElementById('nav-hints')?.addEventListener('click', () => {
+      this.closeSidebar();
+      this.updateHintsDisplay();
+      this.showScreen('hints-screen');
+    });
+
+    document.getElementById('nav-readme')?.addEventListener('click', () => {
+      this.closeSidebar();
+      this.showScreen('readme-screen');
+    });
+
+    document.getElementById('nav-settings')?.addEventListener('click', () => {
+      this.closeSidebar();
+      this.showScreen('settings-screen');
+    });
+
+    // Home buttons
     document.getElementById('btn-play')?.addEventListener('click', () => {
-      this.startGame(1);
+      this.renderChapterSelect();
+      this.showScreen('chapter-menu');
     });
     
     document.getElementById('btn-levels')?.addEventListener('click', () => {
@@ -114,6 +225,7 @@ export class Game {
       this.showScreen('how-to-play');
     });
 
+    // Back buttons
     document.getElementById('btn-back-chapters')?.addEventListener('click', () => {
       this.showScreen('main-menu');
     });
@@ -127,6 +239,70 @@ export class Game {
       this.showScreen('main-menu');
     });
 
+    document.getElementById('btn-back-hints')?.addEventListener('click', () => {
+      this.showScreen('main-menu');
+    });
+
+    document.getElementById('btn-back-readme')?.addEventListener('click', () => {
+      this.showScreen('main-menu');
+    });
+
+    document.getElementById('btn-back-settings')?.addEventListener('click', () => {
+      this.showScreen('main-menu');
+    });
+
+    // Sound toggle in top bar
+    document.getElementById('btn-sound')?.addEventListener('click', () => {
+      this.soundEnabled = !this.soundEnabled;
+      const soundBtn = document.getElementById('btn-sound');
+      if (soundBtn) soundBtn.textContent = this.soundEnabled ? '🔊' : '🔇';
+      const toggleSound = document.getElementById('toggle-sound');
+      if (toggleSound) {
+        toggleSound.textContent = this.soundEnabled ? 'ON' : 'OFF';
+        toggleSound.classList.toggle('active', this.soundEnabled);
+      }
+    });
+
+    // Settings screen toggles
+    document.getElementById('toggle-sound')?.addEventListener('click', () => {
+      this.soundEnabled = !this.soundEnabled;
+      const toggleSound = document.getElementById('toggle-sound');
+      if (toggleSound) {
+        toggleSound.textContent = this.soundEnabled ? 'ON' : 'OFF';
+        toggleSound.classList.toggle('active', this.soundEnabled);
+      }
+      const soundBtn = document.getElementById('btn-sound');
+      if (soundBtn) soundBtn.textContent = this.soundEnabled ? '🔊' : '🔇';
+    });
+
+    document.getElementById('toggle-music')?.addEventListener('click', () => {
+      this.musicEnabled = !this.musicEnabled;
+      const toggleMusic = document.getElementById('toggle-music');
+      if (toggleMusic) {
+        toggleMusic.textContent = this.musicEnabled ? 'ON' : 'OFF';
+        toggleMusic.classList.toggle('active', this.musicEnabled);
+      }
+    });
+
+    document.getElementById('select-language')?.addEventListener('change', (e) => {
+      this.language = e.target.value;
+    });
+
+    // Reset Progress Modal Handlers
+    const resetModal = document.getElementById('reset-confirm-modal');
+    document.getElementById('btn-open-reset-modal')?.addEventListener('click', () => {
+      if (resetModal) resetModal.classList.add('active');
+    });
+
+    document.getElementById('btn-cancel-reset')?.addEventListener('click', () => {
+      if (resetModal) resetModal.classList.remove('active');
+    });
+
+    document.getElementById('btn-confirm-reset')?.addEventListener('click', () => {
+      if (resetModal) resetModal.classList.remove('active');
+      this.resetAllProgress();
+    });
+
     const btnNextLevel = document.getElementById('btn-next-level');
     if (btnNextLevel) {
       btnNextLevel.addEventListener('click', () => {
@@ -134,6 +310,39 @@ export class Game {
         this.showScreen('level-select-menu');
       });
     }
+  }
+
+  openSidebar() {
+    this.updateHintsDisplay();
+    document.getElementById('sidebar-overlay')?.classList.add('active');
+    document.getElementById('sidebar-menu')?.classList.add('active');
+  }
+
+  closeSidebar() {
+    document.getElementById('sidebar-overlay')?.classList.remove('active');
+    document.getElementById('sidebar-menu')?.classList.remove('active');
+  }
+
+  updateHintsDisplay() {
+    const hudCount = document.getElementById('hud-hint-count');
+    if (hudCount) hudCount.textContent = this.hintCredits;
+
+    const sidebarCount = document.getElementById('sidebar-hint-count');
+    if (sidebarCount) sidebarCount.textContent = `${this.hintCredits}`;
+
+    const hintsPageCount = document.getElementById('hints-page-credit-count');
+    if (hintsPageCount) hintsPageCount.textContent = `${this.hintCredits}`;
+  }
+
+  resetAllProgress() {
+    this.levels.forEach((l, index) => {
+      l.completed = false;
+      l.current = (index === 0);
+    });
+    this.hintCredits = 20;
+    this.saveProgress();
+    this.updateHintsDisplay();
+    this.showScreen('main-menu');
   }
 
   getChapterProgress(chapterId) {
@@ -158,22 +367,31 @@ export class Game {
       const el = document.createElement('div');
       el.className = 'journey-node';
       
-      const isLocked = progress.total > 0 && chap.id > 1 && this.getChapterProgress(chap.id - 1).percentage < 100 && false; // For now keeping all unlocked for demo
+      const isLocked = !!chap.locked;
 
-      const dotClass = progress.percentage === 100 ? 'completed' : (progress.percentage > 0 || chap.id === 1 ? 'current' : 'locked');
-      const dotContent = progress.percentage === 100 ? '✓' : (isLocked ? '🔒' : '');
+      const dotClass = isLocked ? 'locked' : (progress.percentage === 100 ? 'completed' : 'current');
+      const dotContent = isLocked ? '🔒' : (progress.percentage === 100 ? '✓' : '');
       
+      const subtitleText = isLocked ? 'Coming Soon' : chap.subtitle;
+      const progressText = isLocked 
+        ? `<span style="color:var(--text-light); font-weight:700;">COMING SOON</span>`
+        : `<span>${progress.completed} / ${progress.total} LEVELS</span>
+           <span style="color:var(--gold);">${progress.percentage === 100 ? '★★★' : ''}</span>`;
+      
+      const progressBar = isLocked ? '' : `
+        <div class="bar-bg" style="margin-top: 8px; height: 6px; border-radius: 3px; overflow: hidden;">
+          <div class="bar-fill" style="width:${progress.percentage}%; height: 100%; border-radius: 3px;"></div>
+        </div>
+      `;
+
       el.innerHTML = `
         <div class="node-content ${isLocked ? 'locked' : ''}">
           <h4>${chap.name}</h4>
-          <p>${chap.subtitle}</p>
+          <p>${subtitleText}</p>
           <div class="node-progress">
-            <span>${progress.completed} / ${progress.total} LEVELS</span>
-            <span style="color:var(--gold);">${progress.percentage === 100 ? '★★★' : ''}</span>
+            ${progressText}
           </div>
-          <div class="bar-bg" style="margin-top: 8px; height: 6px; border-radius: 3px; overflow: hidden;">
-            <div class="bar-fill" style="width:${progress.percentage}%; height: 100%; border-radius: 3px;"></div>
-          </div>
+          ${progressBar}
         </div>
         <div class="node-dot ${dotClass}">${dotContent}</div>
       `;
@@ -391,6 +609,7 @@ export class Game {
         nextLevel.locked = false;
         nextLevel.current = true;
       }
+      this.saveProgress();
     }
 
     // Show elegant success overlay

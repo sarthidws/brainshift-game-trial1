@@ -2,7 +2,24 @@ import * as THREE from 'three';
 
 export class AssetManager {
   constructor(onLoadCallback) {
-    this.loadingManager = new THREE.LoadingManager(onLoadCallback);
+    let callbackTriggered = false;
+    const triggerCallback = () => {
+      if (!callbackTriggered) {
+        callbackTriggered = true;
+        if (onLoadCallback) onLoadCallback();
+      }
+    };
+
+    this.loadingManager = new THREE.LoadingManager(triggerCallback);
+    this.loadingManager.onError = (url) => {
+      console.warn('Asset loading notice for:', url);
+    };
+
+    // Splash safety fallback - guaranteed transition
+    setTimeout(() => {
+      triggerCallback();
+    }, 1500);
+
     this.textureLoader = new THREE.TextureLoader(this.loadingManager);
     this.textures = {};
     
@@ -37,13 +54,22 @@ export class AssetManager {
   }
   
   loadTexture(name, path) {
-    const basePath = import.meta.env.BASE_URL || '/';
-    const fullPath = path.startsWith('/') ? basePath + path.slice(1) : basePath + path;
+    let basePath = import.meta.env.BASE_URL || '/';
+    if (!basePath.endsWith('/')) basePath += '/';
+    const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+    const fullPath = basePath + cleanPath;
     
-    this.textureLoader.load(fullPath, (tex) => {
-      tex.colorSpace = THREE.SRGBColorSpace;
-      this.textures[name] = tex;
-    });
+    this.textureLoader.load(
+      fullPath,
+      (tex) => {
+        tex.colorSpace = THREE.SRGBColorSpace;
+        this.textures[name] = tex;
+      },
+      undefined,
+      (err) => {
+        console.warn(`Failed to load texture ${name} from ${fullPath}:`, err);
+      }
+    );
   }
 
   getTextureMaterial(name) {

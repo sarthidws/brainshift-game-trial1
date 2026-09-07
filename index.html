@@ -10,6 +10,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏹</text></svg>">
+    
     <link rel="stylesheet" href="./styles/main.css" />
   </head>
   <body>
@@ -32,8 +35,8 @@
         <!-- Main Menu -->
         <div id="main-menu" class="screen">
           <div class="home-top-bar">
-            <button class="icon-btn" id="btn-settings">⚙</button>
-            <button class="icon-btn" id="btn-sound">🔊</button>
+            <button class="icon-btn" id="btn-menu" aria-label="Menu">☰</button>
+            <button class="icon-btn" id="btn-sound" aria-label="Toggle Sound">🔊</button>
           </div>
           
           <div class="home-hero">
@@ -44,12 +47,12 @@
             </div>
           </div>
           
-          <div style="display:flex; flex-direction:column; gap:15px; margin-bottom: 20px;">
+          <div class="home-actions">
             <button id="btn-play" class="btn-primary">
               <span class="btn-title">▶ PLAY</span>
               <span class="btn-subtitle">Start your journey</span>
             </button>
-            <div style="display:flex; gap:15px;">
+            <div class="home-sub-buttons">
               <button id="btn-levels" class="btn-secondary">◈ LEVELS</button>
               <button id="btn-how" class="btn-secondary">? HOW TO PLAY</button>
             </div>
@@ -78,8 +81,8 @@
           <div class="screen-header">
             <button class="icon-btn" id="btn-back-levels">←</button>
             <div class="header-titles">
-              <h3 id="level-menu-title">BAL KAND</h3>
-              <p id="level-menu-subtitle">The Beginning</p>
+              <h3 id="level-menu-title">VANVAS</h3>
+              <p id="level-menu-subtitle">The Forest Journey</p>
             </div>
           </div>
           
@@ -93,7 +96,7 @@
           </div>
         </div>
 
-        <!-- How To Play -->
+        <!-- How To Play / Instructions Screen -->
         <div id="how-to-play" class="screen">
           <div class="screen-header">
             <button class="icon-btn" id="btn-back-how">←</button>
@@ -108,29 +111,238 @@
               <div class="htp-num">1</div>
               <div>
                 <h4>LOOK</h4>
-                <p>Observe everything carefully.</p>
+                <p>Observe everything carefully in each scene.</p>
               </div>
             </div>
             <div class="htp-card">
               <div class="htp-num">2</div>
               <div>
                 <h4>DRAG</h4>
-                <p>Move objects around.</p>
+                <p>Interact and move objects across the screen.</p>
               </div>
             </div>
             <div class="htp-card">
               <div class="htp-num">3</div>
               <div>
                 <h4>THINK</h4>
-                <p>Try unexpected solutions.</p>
+                <p>Try lateral thinking and unexpected solutions.</p>
               </div>
             </div>
             <div class="htp-card">
               <div class="htp-num">4</div>
               <div>
                 <h4>SOLVE</h4>
-                <p>Find the hidden answer.</p>
+                <p>Find the hidden answer to complete the quest.</p>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hints & Points Screen -->
+        <div id="hints-screen" class="screen">
+          <div class="screen-header">
+            <button class="icon-btn" id="btn-back-hints">←</button>
+            <div class="header-titles">
+              <h3>HINTS & POINTS</h3>
+              <p>Wisdom & Guidance</p>
+            </div>
+          </div>
+          
+          <div class="scroll-container">
+            <div class="stat-card">
+              <div class="stat-icon">💡</div>
+              <div class="stat-info">
+                <span class="stat-label">Available Hint Credits</span>
+                <span class="stat-value" id="hints-page-credit-count">20</span>
+              </div>
+            </div>
+
+            <div class="htp-card">
+              <div class="htp-num">💡</div>
+              <div>
+                <h4>How Hints Work</h4>
+                <p>During any puzzle level, tap the 💡 button in the top header to reveal a secret clue. Each hint uses 1 credit.</p>
+              </div>
+            </div>
+
+            <div class="htp-card">
+              <div class="htp-num">⭐</div>
+              <div>
+                <h4>Earning Points</h4>
+                <p>Complete each level puzzle successfully to earn +20 Wisdom Credits and advance your spiritual rank.</p>
+              </div>
+            </div>
+
+            <div class="htp-card">
+              <div class="htp-num">🏹</div>
+              <div>
+                <h4>Divine Knowledge</h4>
+                <p>Puzzles challenge your perception, creative thinking, and knowledge of the Ramayan saga.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Read Me Screen -->
+        <div id="readme-screen" class="screen">
+          <div class="screen-header">
+            <button class="icon-btn" id="btn-back-readme">←</button>
+            <div class="header-titles">
+              <h3>READ ME</h3>
+              <p>Game Guide & Rules</p>
+            </div>
+          </div>
+          
+          <div class="scroll-container">
+            <div class="htp-card">
+              <div class="htp-num">🎮</div>
+              <div>
+                <h4>How to Play</h4>
+                <p>Observe each scenario, drag elements, and tap targets to solve the divine challenges.</p>
+              </div>
+            </div>
+
+            <div class="htp-card">
+              <div class="htp-num">📜</div>
+              <div>
+                <h4>Chapters & Levels</h4>
+                <p>Begin your adventure in <b>VANVAS</b>. Work through all levels along the journey path to master the chapter.</p>
+              </div>
+            </div>
+
+            <div class="htp-card">
+              <div class="htp-num">🔓</div>
+              <div>
+                <h4>Unlocking Next Level</h4>
+                <p>Finishing a level unlocks the next stop on your journey map automatically.</p>
+              </div>
+            </div>
+
+            <div class="htp-card">
+              <div class="htp-num">💡</div>
+              <div>
+                <h4>Hints & Points System</h4>
+                <p>Need assistance? Tap the hint bulb anytime. You receive +20 credits with every victory!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings Screen -->
+        <div id="settings-screen" class="screen">
+          <div class="screen-header">
+            <button class="icon-btn" id="btn-back-settings">←</button>
+            <div class="header-titles">
+              <h3>SETTINGS</h3>
+              <p>Audio & Preferences</p>
+            </div>
+          </div>
+          
+          <div class="scroll-container">
+            <div class="setting-row">
+              <div class="setting-info">
+                <span class="setting-icon">🔊</span>
+                <div>
+                  <h4>Sound Effects</h4>
+                  <p>In-game action sounds</p>
+                </div>
+              </div>
+              <button id="toggle-sound" class="toggle-btn active">ON</button>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-info">
+                <span class="setting-icon">🎵</span>
+                <div>
+                  <h4>Music</h4>
+                  <p>Atmospheric melodies</p>
+                </div>
+              </div>
+              <button id="toggle-music" class="toggle-btn active">ON</button>
+            </div>
+
+            <div class="setting-row">
+              <div class="setting-info">
+                <span class="setting-icon">🌐</span>
+                <div>
+                  <h4>Language</h4>
+                  <p>Display text language</p>
+                </div>
+              </div>
+              <select id="select-language" class="setting-select">
+                <option value="en">English</option>
+                <option value="hi">हिंदी (Hindi)</option>
+              </select>
+            </div>
+
+            <div class="setting-row" style="margin-top: 15px; border: 2px dashed rgba(211, 47, 47, 0.3);">
+              <div class="setting-info">
+                <span class="setting-icon">🔄</span>
+                <div>
+                  <h4 style="color: #d32f2f;">Reset Progress</h4>
+                  <p>Clear all completed levels</p>
+                </div>
+              </div>
+              <button id="btn-open-reset-modal" class="btn-danger">RESET</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar Drawer & Backdrop Overlay -->
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
+        <aside id="sidebar-menu" class="sidebar-menu">
+          <div class="sidebar-header">
+            <div class="sidebar-title-box">
+              <span class="sidebar-logo-icon">🏹</span>
+              <div class="sidebar-brand">
+                <h3>BRAINSHIFT</h3>
+                <p>Ramayan</p>
+              </div>
+            </div>
+            <button id="btn-close-sidebar" class="icon-btn" style="width: 38px; height: 38px; font-size: 1.1rem;">✕</button>
+          </div>
+
+          <nav class="sidebar-nav">
+            <button class="sidebar-item" id="nav-home">
+              <span class="item-icon">🏠</span>
+              <span class="item-text">Home</span>
+            </button>
+            <button class="sidebar-item" id="nav-levels">
+              <span class="item-icon">🗺️</span>
+              <span class="item-text">Levels</span>
+            </button>
+            <button class="sidebar-item" id="nav-hints">
+              <span class="item-icon">💡</span>
+              <div class="item-content-wrap">
+                <span class="item-text">Hints & Points</span>
+                <span class="item-badge" id="sidebar-hint-count">20</span>
+              </div>
+            </button>
+            <button class="sidebar-item" id="nav-readme">
+              <span class="item-icon">📖</span>
+              <span class="item-text">Read Me</span>
+            </button>
+            <button class="sidebar-item" id="nav-settings">
+              <span class="item-icon">⚙️</span>
+              <span class="item-text">Settings</span>
+            </button>
+          </nav>
+
+          <div class="sidebar-footer">
+            <p>Think. Discover. Shift.</p>
+            <span>v1.0.0</span>
+          </div>
+        </aside>
+
+        <!-- Reset Confirmation Modal -->
+        <div id="reset-confirm-modal" class="modal-overlay">
+          <div class="soft-panel modal-box">
+            <div style="font-size: 2.8rem; margin-bottom: 8px;">⚠️</div>
+            <h3 style="font-family: var(--font-display); color: var(--maroon); font-size: 1.6rem; margin-bottom: 8px;">Reset Progress?</h3>
+            <p style="color: var(--text-main); font-weight: 700; font-size: 0.95rem; line-height: 1.4; margin-bottom: 22px;">Are you sure you want to reset all completed levels and wisdom credits? This action cannot be undone.</p>
+            <div style="display: flex; gap: 12px; width: 100%;">
+              <button id="btn-cancel-reset" class="btn-secondary" style="flex:1; padding: 12px;">CANCEL</button>
+              <button id="btn-confirm-reset" class="btn-primary" style="flex:1; padding: 12px; background: linear-gradient(180deg, #ef5350 0%, #c62828 100%); box-shadow: inset 0 -4px 0 #b71c1c;"><span class="btn-title" style="font-size:1.1rem;">RESET</span></button>
             </div>
           </div>
         </div>
@@ -161,7 +373,7 @@
           <div class="soft-panel" style="margin: auto; width: 90%; max-width: 350px; text-align: center;">
             <h2 id="result-title" style="color: var(--text-title); font-family: var(--font-display); font-size: 2rem; margin-bottom: 15px;">LEVEL COMPLETE</h2>
             <p id="result-stars" style="font-size: 3rem; color: var(--yellow-bright); margin: 15px 0; text-shadow: 0 4px 0 rgba(0,0,0,0.15);">⭐⭐⭐</p>
-            <p id="result-wisdom" style="font-size: 1.2rem; color: var(--text-main); margin-bottom: 25px; font-weight: 800; opacity: 0.7;">+100 Wisdom</p>
+            <p id="result-wisdom" style="font-size: 1.2rem; color: var(--text-main); margin-bottom: 25px; font-weight: 800; opacity: 0.7;">+20 Wisdom</p>
             <button id="btn-next-level" class="btn-primary"><span class="btn-title" style="font-size:1.6rem;">CONTINUE</span></button>
           </div>
         </div>
