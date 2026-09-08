@@ -51,6 +51,13 @@ export class AssetManager {
     this.loadTexture('normal_deer', '/assets/bal-kand/level_5/normal_deer.png');
     this.loadTexture('peacock', '/assets/bal-kand/level_5/peacock.png');
     this.loadTexture('rabbit', '/assets/bal-kand/level_5/rabbit.png');
+
+    // Level 7 Assets (Ahalya's Liberation)
+    this.loadTexture('ahalya_human', '/assets/bal-kand/ahalya_human_form.png');
+    this.loadTexture('ahalya_stone', '/assets/bal-kand/ahalya_stone_form.png');
+    this.loadTexture('men_stone', '/assets/bal-kand/men_stone_form.png');
+    this.loadTexture('forest_bg', '/assets/bal-kand/forest_16by9_bg.jpeg');
+    this.loadTexture('mobile_forest_bg', '/assets/bal-kand/mobile_forest_bg.jpg');
   }
   
   loadTexture(name, path) {

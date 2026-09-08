@@ -4,6 +4,7 @@ import { BalKandLevel3 } from '../levels/BalKandLevel3.js';
 import { BalKandLevel4 } from '../levels/BalKandLevel4.js';
 import { BalKandLevel5 } from '../levels/BalKandLevel5.js';
 import { BalKandLevel6 } from '../levels/BalKandLevel6.js';
+import { BalKandLevel7 } from '../levels/BalKandLevel7.js';
 import { AssetManager } from './AssetManager.js';
 import { InputManager } from './InputManager.js';
 import * as THREE from 'three';
@@ -92,6 +93,7 @@ export class Game {
       { id: 4, name: 'Build the Bridge', hint: 'Not every stone belongs to the bridge.', completed: false, chapter: 1 },
       { id: 5, name: 'The Golden Deer', hint: 'Only one deer is your target.', completed: false, chapter: 1 },
       { id: 6, name: 'Ravan Vadh', hint: 'Ravan has a hidden weak point. Find it.', completed: false, chapter: 1 },
+      { id: 7, name: "Ahalya's Liberation", hint: "Bring Ram's sacred footprint to the stone.", completed: false, chapter: 1 },
 
       // Chapter 2 (BAL KAND) - Level 1 and Level 2 locked by default
       { id: 1, name: 'The First Arrow', hint: 'Watch where the arrow needs to go.', completed: false, lockedByDefault: true, chapter: 2 },
@@ -495,7 +497,8 @@ export class Game {
     
     const config = this.levels.find(l => l.id === levelId) || this.levels[0];
     
-    if (levelId === 6) this.currentLevelObj = new BalKandLevel6(this);
+    if (levelId === 7) this.currentLevelObj = new BalKandLevel7(this);
+    else if (levelId === 6) this.currentLevelObj = new BalKandLevel6(this);
     else if (levelId === 5) this.currentLevelObj = new BalKandLevel5(this);
     else if (levelId === 4) this.currentLevelObj = new BalKandLevel4(this);
     else if (levelId === 3) this.currentLevelObj = new BalKandLevel3(this);

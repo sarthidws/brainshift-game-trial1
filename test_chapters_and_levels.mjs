@@ -56,12 +56,12 @@ async function testChaptersAndLevels() {
     }));
   });
   console.log('Vanvas levels:', vanvasLevels);
-  if (vanvasLevels.length !== 4) throw new Error(`Expected 4 levels in Vanvas, found ${vanvasLevels.length}`);
+  if (vanvasLevels.length !== 5) throw new Error(`Expected 5 levels in Vanvas, found ${vanvasLevels.length}`);
   if (vanvasLevels[0].isLocked) throw new Error('First level in Vanvas (Sun and Hanuman) should be unlocked');
-  if (!vanvasLevels[1].isLocked || !vanvasLevels[2].isLocked || !vanvasLevels[3].isLocked) {
-    throw new Error('Levels 2, 3, 4 in Vanvas should be locked initially');
+  if (!vanvasLevels[1].isLocked || !vanvasLevels[2].isLocked || !vanvasLevels[3].isLocked || !vanvasLevels[4].isLocked) {
+    throw new Error('Levels 2, 3, 4, 5 in Vanvas should be locked initially');
   }
-  console.log('✓ Vanvas levels 1-4 are ordered correctly and initial level is playable!');
+  console.log('✓ Vanvas levels 1-5 are ordered correctly and initial level is playable!');
 
   // 3. Back to Chapters and open Chapter 2 (BAL KAND)
   console.log('\n3. Testing Chapter 2 (BAL KAND) levels...');
@@ -93,7 +93,7 @@ async function testChaptersAndLevels() {
   if (!balkandLevels[1].isLocked || balkandLevels[1].dotContent !== '🔒') {
     throw new Error('Bal Kand Level 2 (The Training Target) must be locked by default!');
   }
-  console.log('✓ Bal Kand Level 1 & Level 2 are both locked by default with 🔒!');
+  console.log('✓ Bal Kand Levels 1 & 2 are both locked by default with 🔒!');
 
   // 4. Test Reset Progress
   console.log('\n4. Testing Reset Progress...');
@@ -112,12 +112,14 @@ async function testChaptersAndLevels() {
   await page.waitForSelector('#settings-screen.active', { timeout: 2000 });
   await new Promise(r => setTimeout(r, 300));
 
+  await page.waitForSelector('#btn-open-reset-modal', { timeout: 2000 });
   await page.$eval('#btn-open-reset-modal', el => el.scrollIntoView({ block: 'center' }));
-  await new Promise(r => setTimeout(r, 200));
+  await new Promise(r => setTimeout(r, 300));
   await page.click('#btn-open-reset-modal');
   await page.waitForSelector('#reset-confirm-modal.active', { timeout: 2000 });
+  await new Promise(r => setTimeout(r, 300));
   await page.click('#btn-confirm-reset');
-  await page.waitForSelector('#main-menu.active', { timeout: 2000 });
+  await page.waitForSelector('#main-menu.active', { timeout: 3000 });
   await new Promise(r => setTimeout(r, 400));
   console.log('✓ Progress reset executed');
 
