@@ -17,6 +17,7 @@ export class BalKandLevel3 {
     this.onPointerUp = this.onPointerUp.bind(this);
   }
 
+  
   init() {
     this.game.camera.position.set(0, 0, 10);
     
