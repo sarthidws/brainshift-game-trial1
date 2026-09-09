@@ -26,6 +26,7 @@ async function testLevel8Temple() {
       window.game.startGame(8);
     });
 
+    
     await page.waitForSelector('#hud.active', { timeout: 3000 });
     await page.waitForSelector('#temple-360-guide.active', { timeout: 10000 });
     await page.waitForSelector('#temple-tap-prompt.active', { timeout: 5000 });
