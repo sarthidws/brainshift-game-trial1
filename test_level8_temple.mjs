@@ -4,6 +4,7 @@ async function testLevel8Temple() {
   console.log('====================================================');
   console.log('Testing Level 8: 3D Temple & Lord Shiva Manifestation');
   console.log('====================================================');
+  
 
   const browser = await puppeteer.launch({
     headless: "new",
