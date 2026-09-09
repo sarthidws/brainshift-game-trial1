@@ -92,7 +92,7 @@ export class Game {
     ];
 
     this.levels = [
-      // Chapter 1 (VANVAS) - First chapter in order
+      // Chapter 1 (VANVAS)
       { id: 3, name: 'The Sun and Hanuman', hint: 'Give Hanuman the fruit.', completed: false, current: true, chapter: 1 },
       { id: 4, name: 'Build the Bridge', hint: 'Not every stone belongs to the bridge.', completed: false, chapter: 1 },
       { id: 5, name: 'The Golden Deer', hint: 'Only one deer is your target.', completed: false, chapter: 1 },
@@ -100,9 +100,9 @@ export class Game {
       { id: 7, name: "Ahalya's Liberation", hint: "Bring Ram's sacred footprint to the stone.", completed: false, chapter: 1 },
       { id: 8, name: "The Divine Temple", hint: "Explore the 360° divine temple architecture.", completed: false, chapter: 1 },
 
-      // Chapter 2 (BAL KAND) - Level 1 and Level 2 locked by default
-      { id: 1, name: 'The First Arrow', hint: 'Watch where the arrow needs to go.', completed: false, lockedByDefault: true, chapter: 2 },
-      { id: 2, name: 'The Training Target', hint: 'Look carefully at the target.', completed: false, lockedByDefault: true, chapter: 2 }
+      // Chapter 2 (BAL KAND) - All levels unlocked
+      { id: 1, name: 'The First Arrow', hint: 'Watch where the arrow needs to go.', completed: false, chapter: 2 },
+      { id: 2, name: 'The Training Target', hint: 'Look carefully at the target.', completed: false, chapter: 2 }
     ];
     this.currentChapter = 1;
     
@@ -365,9 +365,6 @@ export class Game {
     this.levels.forEach(l => {
       l.completed = false;
       l.current = (l.id === 3);
-      if (l.chapter === 2) {
-        l.lockedByDefault = true;
-      }
     });
     this.hintCredits = 20;
     this.saveProgress();
@@ -473,19 +470,13 @@ export class Game {
       const el = document.createElement('div');
       el.className = 'journey-node';
       
-      let dotClass = 'locked';
-      let dotContent = '🔒';
-      let contentClass = 'locked';
+      let dotClass = 'current';
+      let dotContent = '';
+      let contentClass = '';
       
       if (level.completed) {
         dotClass = 'completed';
         dotContent = '✓';
-        contentClass = '';
-      } else if (!level.lockedByDefault && (level.current || (index === 0 && progress.completed === 0) || (index > 0 && chapterLevels[index-1].completed))) {
-        // Unlock if it's the first level, or previous is completed, or explicitly marked current
-        dotClass = 'current';
-        dotContent = '';
-        contentClass = '';
       }
 
       const stars = level.completed ? `<span style="color:var(--gold); font-size:1.2rem; letter-spacing:2px; text-shadow: 0 2px 0 rgba(0,0,0,0.1);">★★★</span>` : ``;
@@ -495,18 +486,16 @@ export class Game {
           <h4 style="font-size: 1.1rem; margin-bottom: 2px;">Level ${index + 1}</h4>
           <p style="font-size: 1.3rem; color: var(--text-title); margin-bottom: 5px;">${level.name}</p>
           <div class="node-progress">
-            <span>${dotClass === 'locked' ? 'Locked' : (dotClass === 'completed' ? 'Completed' : 'Current')}</span>
+            <span>${level.completed ? 'Completed' : 'Playable'}</span>
             ${stars}
           </div>
         </div>
         <div class="node-dot ${dotClass}">${dotContent}</div>
       `;
       
-      if (contentClass !== 'locked') {
-        el.addEventListener('click', () => {
-          this.startGame(level.id);
-        });
-      }
+      el.addEventListener('click', () => {
+        this.startGame(level.id);
+      });
       
       mapContainer.appendChild(el);
     });

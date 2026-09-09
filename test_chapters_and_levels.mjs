@@ -57,11 +57,11 @@ async function testChaptersAndLevels() {
   });
   console.log('Vanvas levels:', vanvasLevels);
   if (vanvasLevels.length !== 6) throw new Error(`Expected 6 levels in Vanvas, found ${vanvasLevels.length}`);
-  if (vanvasLevels[0].isLocked) throw new Error('First level in Vanvas (Sun and Hanuman) should be unlocked');
-  if (!vanvasLevels[1].isLocked || !vanvasLevels[2].isLocked || !vanvasLevels[3].isLocked || !vanvasLevels[4].isLocked || !vanvasLevels[5].isLocked) {
-    throw new Error('Levels 2, 3, 4, 5, 6 in Vanvas should be locked initially');
+  const lockedVanvas = vanvasLevels.filter(l => l.isLocked);
+  if (lockedVanvas.length > 0) {
+    throw new Error('All levels in Vanvas should be unlocked and playable');
   }
-  console.log('✓ Vanvas levels 1-6 are ordered correctly and initial level is playable!');
+  console.log('✓ All 6 Vanvas levels are unlocked and playable!');
 
   // 3. Back to Chapters and open Chapter 2 (BAL KAND)
   console.log('\n3. Testing Chapter 2 (BAL KAND) levels...');
@@ -87,13 +87,10 @@ async function testChaptersAndLevels() {
   });
   console.log('Bal Kand levels:', balkandLevels);
   if (balkandLevels.length !== 2) throw new Error(`Expected 2 levels in Bal Kand, found ${balkandLevels.length}`);
-  if (!balkandLevels[0].isLocked || balkandLevels[0].dotContent !== '🔒') {
-    throw new Error('Bal Kand Level 1 (The First Arrow) must be locked by default!');
+  if (balkandLevels[0].isLocked || balkandLevels[1].isLocked) {
+    throw new Error('All Bal Kand levels should be unlocked and playable!');
   }
-  if (!balkandLevels[1].isLocked || balkandLevels[1].dotContent !== '🔒') {
-    throw new Error('Bal Kand Level 2 (The Training Target) must be locked by default!');
-  }
-  console.log('✓ Bal Kand Levels 1 & 2 are both locked by default with 🔒!');
+  console.log('✓ Bal Kand Levels 1 & 2 are both unlocked and playable!');
 
   // 4. Test Reset Progress
   console.log('\n4. Testing Reset Progress...');
@@ -123,7 +120,7 @@ async function testChaptersAndLevels() {
   await new Promise(r => setTimeout(r, 400));
   console.log('✓ Progress reset executed');
 
-  // Verify Bal Kand is still locked after reset
+  // Verify Bal Kand is unlocked after reset
   await page.click('#btn-play');
   await page.waitForSelector('#chapter-menu.active', { timeout: 2000 });
   await new Promise(r => setTimeout(r, 300));
@@ -141,10 +138,10 @@ async function testChaptersAndLevels() {
     }));
   });
   console.log('Post-reset Bal Kand levels:', postResetBalkandLevels);
-  if (!postResetBalkandLevels[0].isLocked || !postResetBalkandLevels[1].isLocked) {
-    throw new Error('Bal Kand levels must remain locked by default after reset!');
+  if (postResetBalkandLevels[0].isLocked || postResetBalkandLevels[1].isLocked) {
+    throw new Error('Bal Kand levels should remain unlocked after reset!');
   }
-  console.log('✓ Bal Kand levels verified locked after reset!');
+  console.log('✓ Bal Kand levels verified unlocked and playable after reset!');
 
   await browser.close();
   console.log('\n🎉 All tests passed successfully!');
