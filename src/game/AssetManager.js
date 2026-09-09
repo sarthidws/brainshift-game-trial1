@@ -58,6 +58,7 @@ export class AssetManager {
     this.loadTexture('men_stone', '/assets/bal-kand/men_stone_form.png');
     this.loadTexture('forest_bg', '/assets/bal-kand/forest_16by9_bg.jpeg');
     this.loadTexture('mobile_forest_bg', '/assets/bal-kand/mobile_forest_bg.jpg');
+    this.loadTexture('ram_side_anegle_foot', '/assets/bal-kand/ram_side_anegle_foot.png');
   }
   
   loadTexture(name, path) {
@@ -70,6 +71,9 @@ export class AssetManager {
       fullPath,
       (tex) => {
         tex.colorSpace = THREE.SRGBColorSpace;
+        tex.generateMipmaps = true;
+        tex.minFilter = THREE.LinearMipmapLinearFilter;
+        tex.magFilter = THREE.LinearFilter;
         this.textures[name] = tex;
       },
       undefined,

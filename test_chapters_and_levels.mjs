@@ -56,12 +56,12 @@ async function testChaptersAndLevels() {
     }));
   });
   console.log('Vanvas levels:', vanvasLevels);
-  if (vanvasLevels.length !== 5) throw new Error(`Expected 5 levels in Vanvas, found ${vanvasLevels.length}`);
+  if (vanvasLevels.length !== 6) throw new Error(`Expected 6 levels in Vanvas, found ${vanvasLevels.length}`);
   if (vanvasLevels[0].isLocked) throw new Error('First level in Vanvas (Sun and Hanuman) should be unlocked');
-  if (!vanvasLevels[1].isLocked || !vanvasLevels[2].isLocked || !vanvasLevels[3].isLocked || !vanvasLevels[4].isLocked) {
-    throw new Error('Levels 2, 3, 4, 5 in Vanvas should be locked initially');
+  if (!vanvasLevels[1].isLocked || !vanvasLevels[2].isLocked || !vanvasLevels[3].isLocked || !vanvasLevels[4].isLocked || !vanvasLevels[5].isLocked) {
+    throw new Error('Levels 2, 3, 4, 5, 6 in Vanvas should be locked initially');
   }
-  console.log('✓ Vanvas levels 1-5 are ordered correctly and initial level is playable!');
+  console.log('✓ Vanvas levels 1-6 are ordered correctly and initial level is playable!');
 
   // 3. Back to Chapters and open Chapter 2 (BAL KAND)
   console.log('\n3. Testing Chapter 2 (BAL KAND) levels...');

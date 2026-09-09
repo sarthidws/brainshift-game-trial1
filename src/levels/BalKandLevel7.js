@@ -11,10 +11,9 @@ export class BalKandLevel7 {
     this.dragOffset = new THREE.Vector3();
     this.footprintStartPos = new THREE.Vector3(-4.8, -4.5, 2);
     this.targetPos = new THREE.Vector3(6.5, -2.0, 0);
-    this.successRadius = 4.5; // Generous drop zone for mobile & desktop
+    this.successRadius = 4.8; // Generous drop zone
 
     this.time = 0;
-    this.animTime = 0;
     this.transformProgress = 0;
 
     // Return lerp state
@@ -33,22 +32,24 @@ export class BalKandLevel7 {
     this.game.scene.background = null;
 
     // 1. Background Setup (Landscape / Portrait adaptive)
-    const bgGeo = new THREE.PlaneGeometry(160, 160);
+    const bgGeo = new THREE.PlaneGeometry(1, 1);
     this.bgMatDesktop = this.game.assetManager.getTextureMaterial('forest_bg');
     this.bgMatMobile = this.game.assetManager.getTextureMaterial('mobile_forest_bg');
     
-    const isLandscape = window.innerWidth > window.innerHeight;
-    this.bgMat = (isLandscape ? this.bgMatDesktop : this.bgMatMobile).clone();
+    const isLandscape = (window.innerWidth / window.innerHeight) > 1.0;
+    const initialMat = isLandscape ? this.bgMatDesktop : this.bgMatMobile;
+    this.bgMat = initialMat ? initialMat.clone() : new THREE.MeshBasicMaterial({ color: 0x224422 });
     this.bg = new THREE.Mesh(bgGeo, this.bgMat);
     this.bg.position.set(0, 0, -6);
     this.bg.isLevelObject = true;
     this.game.scene.add(this.bg);
 
-    // 2. Lord Ram (Left Side, facing Ahalya)
-    const ramGeo = new THREE.PlaneGeometry(7.0, 10.0);
-    const ramMat = this.game.assetManager.getTextureMaterial('ram');
+    // 2. Lord Ram (Left Side, with sacred foot extended)
+    // Image aspect ratio: 699x1536 ≈ 0.455
+    const ramGeo = new THREE.PlaneGeometry(6.0, 13.2);
+    const ramMat = this.game.assetManager.getTextureMaterial('ram_side_anegle_foot');
     this.ram = new THREE.Mesh(ramGeo, ramMat);
-    this.ram.position.set(-8.0, -1.5, 0);
+    this.ram.position.set(-8.5, -0.5, 0);
     this.ram.isLevelObject = true;
     this.ram.name = "Ram";
     this.game.scene.add(this.ram);
@@ -95,20 +96,21 @@ export class BalKandLevel7 {
     this.game.scene.add(this.ahalyaHuman);
 
     // 6. Divine Glow / Halo Ring for transformation
-    const glowGeo = new THREE.PlaneGeometry(12, 12);
+    const glowGeo = new THREE.PlaneGeometry(14, 14);
     const canvas = document.createElement('canvas');
     canvas.width = 256;
     canvas.height = 256;
     const ctx = canvas.getContext('2d');
     const gradient = ctx.createRadialGradient(128, 128, 10, 128, 128, 120);
-    gradient.addColorStop(0, 'rgba(255, 240, 180, 0.95)');
-    gradient.addColorStop(0.3, 'rgba(255, 215, 0, 0.7)');
-    gradient.addColorStop(0.6, 'rgba(255, 170, 0, 0.3)');
+    gradient.addColorStop(0, 'rgba(255, 245, 190, 0.95)');
+    gradient.addColorStop(0.3, 'rgba(255, 220, 50, 0.75)');
+    gradient.addColorStop(0.6, 'rgba(255, 170, 0, 0.35)');
     gradient.addColorStop(1, 'rgba(255, 150, 0, 0)');
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, 256, 256);
 
     const glowTex = new THREE.CanvasTexture(canvas);
+    glowTex.generateMipmaps = true;
     this.glowMat = new THREE.MeshBasicMaterial({
       map: glowTex,
       transparent: true,
@@ -122,41 +124,50 @@ export class BalKandLevel7 {
     this.glowMesh.isLevelObject = true;
     this.game.scene.add(this.glowMesh);
 
-    // 7. Footprint Aura (Gentle pulsating aura around draggable footprint)
-    const auraGeo = new THREE.PlaneGeometry(4.8, 4.8);
+    // 7. Footprint Aura (Gentle pulsating golden halo around draggable footprint)
+    const auraGeo = new THREE.PlaneGeometry(5.2, 5.2);
     const auraCanvas = document.createElement('canvas');
     auraCanvas.width = 128;
     auraCanvas.height = 128;
     const auraCtx = auraCanvas.getContext('2d');
     const auraGrad = auraCtx.createRadialGradient(64, 64, 5, 64, 64, 60);
-    auraGrad.addColorStop(0, 'rgba(255, 230, 140, 0.8)');
-    auraGrad.addColorStop(0.5, 'rgba(255, 190, 50, 0.4)');
+    auraGrad.addColorStop(0, 'rgba(255, 235, 140, 0.85)');
+    auraGrad.addColorStop(0.5, 'rgba(255, 190, 50, 0.45)');
     auraGrad.addColorStop(1, 'rgba(255, 180, 0, 0)');
     auraCtx.fillStyle = auraGrad;
     auraCtx.fillRect(0, 0, 128, 128);
 
     const auraTex = new THREE.CanvasTexture(auraCanvas);
+    auraTex.generateMipmaps = true;
     this.footprintAuraMat = new THREE.MeshBasicMaterial({
       map: auraTex,
       transparent: true,
-      opacity: 0.6,
+      opacity: 0.7,
       blending: THREE.AdditiveBlending,
       depthWrite: false
     });
     this.footprintAura = new THREE.Mesh(auraGeo, this.footprintAuraMat);
     this.footprintAura.position.set(0, 0, -0.1);
 
-    // 8. Draggable Sacred Footprint (Ram's sacred stone footprint)
-    const footprintGeo = new THREE.PlaneGeometry(3.4, 3.4);
+    // 8. Draggable Sacred Footprint (Ram's sacred footprint)
+    const footprintGeo = new THREE.PlaneGeometry(3.6, 3.6);
     this.footprintMat = this.game.assetManager.getTextureMaterial('ram_stone_1').clone();
     this.footprint = new THREE.Mesh(footprintGeo, this.footprintMat);
     this.footprint.position.copy(this.footprintStartPos);
     this.footprint.isLevelObject = true;
     this.footprint.name = "RamFootprint";
     this.footprint.add(this.footprintAura);
+    
+    // Large invisible hit box for effortless grabbing on mobile touch screens
+    const hitBoxGeo = new THREE.PlaneGeometry(6.0, 6.0);
+    const hitBoxMat = new THREE.MeshBasicMaterial({ visible: false });
+    this.footprintHitBox = new THREE.Mesh(hitBoxGeo, hitBoxMat);
+    this.footprintHitBox.position.set(0, 0, 0.1);
+    this.footprint.add(this.footprintHitBox);
+
     this.game.scene.add(this.footprint);
 
-    // Adjust positions for mobile/portrait screens
+    // Initial Layout update
     this.updateLayout();
 
     // Event Listeners
@@ -171,56 +182,78 @@ export class BalKandLevel7 {
   }
 
   updateLayout() {
-    const aspect = window.innerWidth / window.innerHeight;
+    const app = document.getElementById('app') || document.body;
+    const width = app.clientWidth || window.innerWidth;
+    const height = app.clientHeight || window.innerHeight;
+    const aspect = width / height;
     const isLandscape = aspect > 1.0;
 
+    let frustumWidth = 26;
+    let frustumHeight = frustumWidth / aspect;
+    if (isLandscape) {
+      frustumHeight = 20;
+      frustumWidth = frustumHeight * aspect;
+    }
+
+    // 1. Fit Background plane perfectly to visible camera frustum with high-res texture
     if (this.bg && this.bgMat) {
       const activeTexMat = isLandscape ? this.bgMatDesktop : this.bgMatMobile;
       if (activeTexMat && activeTexMat.map) {
         this.bgMat.map = activeTexMat.map;
         this.bgMat.needsUpdate = true;
       }
+      if (this.bg.geometry) this.bg.geometry.dispose();
+      this.bg.geometry = new THREE.PlaneGeometry(frustumWidth, frustumHeight);
+      this.bg.position.set(0, 0, -6);
     }
 
+    // 2. Positions and Scales for Portrait Mobile vs Landscape Desktop
     if (!isLandscape) {
-      // Mobile / Portrait Layout
-      // Scale and position objects vertically
-      this.ram.position.set(-4.8, 4.2, 0);
-      this.ram.scale.set(0.85, 0.85, 0.85);
+      // Mobile / Portrait Layout (frustumWidth = 26, frustumHeight ≈ 56)
+      this.ram.position.set(-5.5, 8.0, 0);
+      this.ram.scale.set(0.9, 0.9, 0.9);
 
-      this.footprintStartPos.set(-2.2, 1.2, 2);
+      this.footprintStartPos.set(-2.5, 2.0, 2);
       if (!this.isDragging && this.state === 'PLAYING') {
         this.footprint.position.copy(this.footprintStartPos);
       }
 
-      this.menStone.position.set(4.2, 3.8, -0.5);
-      this.menStone.scale.set(0.8, 0.8, 0.8);
+      this.menStone.position.set(4.5, 7.5, -0.5);
+      this.menStone.scale.set(0.85, 0.85, 0.85);
 
-      this.simpleStone.position.set(-4.5, -4.8, -0.5);
+      this.simpleStone.position.set(-5.0, -10.0, -0.5);
 
-      this.targetPos.set(1.5, -4.0, 0);
+      this.targetPos.set(2.0, -10.0, 0);
       this.ahalyaStone.position.copy(this.targetPos);
-      this.ahalyaHuman.position.set(this.targetPos.x, this.targetPos.y + 0.3, 0.1);
+      this.ahalyaStone.scale.set(1.1, 1.1, 1.1);
+
+      this.ahalyaHuman.position.set(this.targetPos.x, this.targetPos.y + 0.4, 0.1);
       this.glowMesh.position.set(this.targetPos.x, this.targetPos.y, -0.2);
+
+      this.successRadius = 6.0; // Larger drop area on mobile
     } else {
       // Landscape Layout (Desktop & Landscape Mobile)
-      this.ram.position.set(-8.0, -1.5, 0);
+      this.ram.position.set(-8.5, -0.5, 0);
       this.ram.scale.set(1, 1, 1);
 
-      this.footprintStartPos.set(-4.8, -4.5, 2);
+      this.footprintStartPos.set(-5.8, -5.5, 2);
       if (!this.isDragging && this.state === 'PLAYING') {
         this.footprint.position.copy(this.footprintStartPos);
       }
 
-      this.menStone.position.set(1.2, 1.8, -0.5);
+      this.menStone.position.set(1.5, 2.0, -0.5);
       this.menStone.scale.set(1, 1, 1);
 
-      this.simpleStone.position.set(0.5, -4.8, -0.5);
+      this.simpleStone.position.set(0.5, -5.0, -0.5);
 
-      this.targetPos.set(6.5, -2.0, 0);
+      this.targetPos.set(7.0, -1.8, 0);
       this.ahalyaStone.position.copy(this.targetPos);
+      this.ahalyaStone.scale.set(1, 1, 1);
+
       this.ahalyaHuman.position.set(this.targetPos.x, this.targetPos.y + 0.3, 0.1);
       this.glowMesh.position.set(this.targetPos.x, this.targetPos.y, -0.2);
+
+      this.successRadius = 4.8;
     }
   }
 
@@ -235,29 +268,29 @@ export class BalKandLevel7 {
     if (this.state === 'PLAYING') {
       if (!this.isDragging) {
         // Floating motion
-        const floatOffset = Math.sin(this.time * 2.8) * 0.12;
+        const floatOffset = Math.sin(this.time * 2.8) * 0.15;
         this.footprint.position.y = this.footprintStartPos.y + floatOffset;
         
         // Gentle scale pulse
-        const pulse = 1.0 + Math.sin(this.time * 2.2) * 0.04;
+        const pulse = 1.0 + Math.sin(this.time * 2.2) * 0.05;
         this.footprint.scale.set(pulse, pulse, pulse);
 
         // Aura pulse
         if (this.footprintAuraMat) {
-          this.footprintAuraMat.opacity = 0.5 + Math.sin(this.time * 3.5) * 0.25;
+          this.footprintAuraMat.opacity = 0.55 + Math.sin(this.time * 3.5) * 0.25;
         }
       } else {
-        // While dragging: slight scale up and active aura
-        this.footprint.scale.set(1.15, 1.15, 1.15);
+        // While dragging: scale up slightly
+        this.footprint.scale.set(1.2, 1.2, 1.2);
         if (this.footprintAuraMat) {
-          this.footprintAuraMat.opacity = 0.85;
+          this.footprintAuraMat.opacity = 0.9;
         }
       }
     }
 
     // 2. Returning animation on incorrect drop
     if (this.state === 'RETURNING') {
-      this.returnProgress += delta * 3.5; // Return in ~0.28s
+      this.returnProgress += delta * 4.0; // Return in ~0.25s
       if (this.returnProgress >= 1) {
         this.returnProgress = 1;
         this.footprint.position.copy(this.footprintStartPos);
@@ -279,25 +312,26 @@ export class BalKandLevel7 {
       if (this.glowMat && this.glowMesh) {
         if (p < 0.6) {
           this.glowMat.opacity = Math.sin((p / 0.6) * Math.PI * 0.5) * 1.0;
-          const s = 0.6 + (p / 0.6) * 1.2;
+          const s = 0.6 + (p / 0.6) * 1.3;
           this.glowMesh.scale.set(s, s, s);
         } else {
           this.glowMat.opacity = (1 - (p - 0.6) / 0.4);
-          const s = 1.8 + ((p - 0.6) / 0.4) * 0.4;
+          const s = 1.9 + ((p - 0.6) / 0.4) * 0.4;
           this.glowMesh.scale.set(s, s, s);
         }
-        this.glowMesh.rotation.z += delta * 1.2;
+        this.glowMesh.rotation.z += delta * 1.5;
       }
 
       // Phase B: Stone fades out and gently scales
       if (this.ahalyaStoneMat && this.ahalyaStone) {
         const stoneOpacity = Math.max(0, 1 - p * 1.4);
         this.ahalyaStoneMat.opacity = stoneOpacity;
-        const stoneScale = 1 + p * 0.08;
+        const baseScale = (window.innerWidth / window.innerHeight) > 1.0 ? 1 : 1.1;
+        const stoneScale = baseScale * (1 + p * 0.08);
         this.ahalyaStone.scale.set(stoneScale, stoneScale, stoneScale);
       }
 
-      // Phase C: Footprint gently dissolves into the divine energy
+      // Phase C: Footprint gently dissolves into divine light
       if (this.footprintMat) {
         this.footprintMat.opacity = Math.max(0, 1 - p * 1.2);
         if (this.footprintAuraMat) {
@@ -309,7 +343,8 @@ export class BalKandLevel7 {
       if (this.ahalyaHumanMat && this.ahalyaHuman) {
         const humanOpacity = Math.min(1, Math.max(0, (p - 0.25) / 0.7));
         this.ahalyaHumanMat.opacity = humanOpacity;
-        const humanScale = 0.9 + Math.sin(Math.min(1, p / 0.9) * Math.PI * 0.5) * 0.1;
+        const baseScale = (window.innerWidth / window.innerHeight) > 1.0 ? 1 : 1.1;
+        const humanScale = baseScale * (0.9 + Math.sin(Math.min(1, p / 0.9) * Math.PI * 0.5) * 0.1);
         this.ahalyaHuman.scale.set(humanScale, humanScale, humanScale);
         this.ahalyaHuman.position.y = this.targetPos.y + 0.3 + Math.sin(p * Math.PI) * 0.15;
       }
@@ -346,18 +381,36 @@ export class BalKandLevel7 {
     this.raycaster.setFromCamera(this.mouse, this.game.camera);
 
     // Interactive targets
-    const interactiveObjects = [this.footprint, this.menStone, this.simpleStone, this.ahalyaStone];
+    const interactiveObjects = [
+      this.footprint,
+      this.footprintHitBox,
+      this.footprintAura,
+      this.ram,
+      this.menStone,
+      this.simpleStone,
+      this.ahalyaStone
+    ];
     const intersects = this.raycaster.intersectObjects(interactiveObjects, true);
 
     if (intersects.length > 0) {
       const topObj = intersects[0].object;
       
-      // Check if player touched footprint or its aura
-      if (topObj === this.footprint || topObj === this.footprintAura || topObj.parent === this.footprint) {
+      // Check if player touched footprint or its hitbox / aura or Ram's foot area
+      if (topObj === this.footprint || topObj === this.footprintHitBox || topObj === this.footprintAura || topObj.parent === this.footprint) {
         this.isDragging = true;
         const worldPos = this.getPointerWorldPos();
         if (worldPos) {
           this.dragOffset.subVectors(this.footprint.position, worldPos);
+        }
+      } else if (topObj === this.ram) {
+        // If player clicked lower part of Ram (his foot), start dragging footprint
+        const clickPoint = intersects[0].point;
+        if (clickPoint.y < this.ram.position.y) {
+          this.isDragging = true;
+          const worldPos = this.getPointerWorldPos();
+          if (worldPos) {
+            this.dragOffset.subVectors(this.footprint.position, worldPos);
+          }
         }
       } else if (topObj === this.menStone || topObj === this.simpleStone) {
         // Gentle rock shake on tapping distractors

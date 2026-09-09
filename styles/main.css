@@ -1205,4 +1205,277 @@ canvas {
   padding: 16px 20px;
 }
 
+/* ==========================================================================
+   Level 8: 3D Temple Explorer & 360 Controls UI
+   ========================================================================== */
+.temple-level-ui {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 110;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.temple-level-ui > * {
+  pointer-events: auto;
+}
+
+/* Loading Overlay Card */
+.temple-loading-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  background: linear-gradient(180deg, #FFFFFF 0%, #FFFDF5 100%);
+  border: 3.5px solid var(--brown);
+  border-radius: 28px;
+  box-shadow: inset 0 2px 0 #FFFFFF, 0 20px 45px rgba(0, 0, 0, 0.35);
+  padding: 30px 24px;
+  text-align: center;
+  width: 90%;
+  max-width: 360px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: auto;
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), visibility 0.3s;
+}
+
+.temple-loading-card.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.temple-loading-icon {
+  font-size: 3.2rem;
+  line-height: 1;
+  margin-bottom: 12px;
+  animation: pulseRotate 3s infinite ease-in-out;
+  filter: drop-shadow(0 4px 10px rgba(255, 193, 7, 0.4));
+}
+
+@keyframes pulseRotate {
+  0% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.1) rotate(6deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.temple-loading-title {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  color: var(--maroon);
+  margin-bottom: 4px;
+}
+
+.temple-loading-subtitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-subtitle);
+  margin-bottom: 20px;
+}
+
+.temple-loading-bar-bg {
+  background: rgba(141, 110, 99, 0.15);
+  border-radius: 10px;
+  height: 14px;
+  width: 100%;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.temple-loading-bar-fill {
+  background: linear-gradient(90deg, #FFB74D 0%, #FF9800 50%, #FFD54F 100%);
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.25s ease;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* 360 Exploration Guidance Badge */
+.temple-360-guide {
+  position: absolute;
+  top: calc(max(10px, env(safe-area-inset-top, 10px)) + 68px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  background: rgba(255, 253, 240, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 2px solid var(--orange-main);
+  border-radius: 20px;
+  padding: 8px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), visibility 0.35s;
+  pointer-events: auto;
+  white-space: nowrap;
+  max-width: 90%;
+}
+
+.temple-360-guide.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.temple-guide-icon {
+  font-size: 1.5rem;
+  animation: spinSlow 6s linear infinite;
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.temple-guide-text {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--maroon);
+}
+
+.temple-guide-sub {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-subtitle);
+}
+
+/* Action Button Panel (Bottom Floating) */
+.temple-action-panel {
+  position: absolute;
+  bottom: max(16px, env(safe-area-inset-bottom, 16px));
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  width: 90%;
+  max-width: 360px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), visibility 0.4s;
+  pointer-events: auto;
+  z-index: 120;
+}
+
+.temple-action-panel.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.temple-next-btn {
+  width: 100%;
+  padding: 16px 20px;
+  border-radius: 24px;
+  background: linear-gradient(180deg, #FFB74D 0%, #FF9800 100%);
+  box-shadow: inset 0 -5px 0 var(--orange-shadow), inset 0 5px 0 rgba(255, 255, 255, 0.5), 0 10px 25px rgba(230, 81, 0, 0.4);
+  animation: pulseGlow 2.5s infinite alternate ease-in-out;
+}
+
+@keyframes pulseGlow {
+  0% { box-shadow: inset 0 -5px 0 var(--orange-shadow), inset 0 5px 0 rgba(255, 255, 255, 0.5), 0 8px 18px rgba(230, 81, 0, 0.35); }
+  100% { box-shadow: inset 0 -5px 0 var(--orange-shadow), inset 0 5px 0 rgba(255, 255, 255, 0.5), 0 14px 30px rgba(255, 152, 0, 0.65); transform: translateY(-2px); }
+}
+
+.temple-next-btn .btn-title {
+  font-size: 1.4rem;
+  letter-spacing: 1px;
+}
+
+.temple-next-btn .btn-subtitle {
+  font-size: 0.85rem;
+  margin-top: 2px;
+}
+
+/* Interactive Tap Prompt (Center-Bottom) */
+.temple-tap-prompt {
+  position: absolute;
+  bottom: max(22px, env(safe-area-inset-bottom, 22px));
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  width: 90%;
+  max-width: 360px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), visibility 0.4s;
+  pointer-events: auto;
+  z-index: 120;
+}
+
+.temple-tap-prompt.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.temple-tap-pill {
+  width: 100%;
+  padding: 16px 20px;
+  border-radius: 26px;
+  border: 3px solid #FFD54F;
+  background: linear-gradient(180deg, #FFFFFF 0%, #FFF8E1 100%);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25), 0 0 20px rgba(255, 193, 7, 0.4);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  position: relative;
+  animation: bounceTap 2s infinite ease-in-out;
+  transition: transform 0.15s ease;
+}
+
+.temple-tap-pill:active {
+  transform: scale(0.96);
+}
+
+@keyframes bounceTap {
+  0%, 100% { transform: translateY(0); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25), 0 0 18px rgba(255, 193, 7, 0.4); }
+  50% { transform: translateY(-6px); box-shadow: 0 16px 30px rgba(0, 0, 0, 0.3), 0 0 30px rgba(255, 193, 7, 0.7); }
+}
+
+.temple-tap-icon {
+  font-size: 1.5rem;
+  animation: spinSlow 4s linear infinite;
+}
+
+.temple-tap-title {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  color: var(--maroon);
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+@media (max-width: 480px) {
+  .temple-360-guide {
+    padding: 6px 14px;
+    gap: 8px;
+  }
+  .temple-360-guide .temple-guide-text {
+    font-size: 0.85rem;
+  }
+  .temple-360-guide .temple-guide-sub {
+    font-size: 0.72rem;
+  }
+  .temple-tap-pill {
+    padding: 13px 16px;
+  }
+  .temple-tap-title {
+    font-size: 0.98rem;
+  }
+  .temple-next-btn {
+    padding: 14px 18px;
+  }
+  .temple-next-btn .btn-title {
+    font-size: 1.25rem;
+  }
+}
+
+
+
 

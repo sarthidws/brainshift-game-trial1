@@ -5,6 +5,7 @@ import { BalKandLevel4 } from '../levels/BalKandLevel4.js';
 import { BalKandLevel5 } from '../levels/BalKandLevel5.js';
 import { BalKandLevel6 } from '../levels/BalKandLevel6.js';
 import { BalKandLevel7 } from '../levels/BalKandLevel7.js';
+import { BalKandLevel8 } from '../levels/BalKandLevel8.js';
 import { AssetManager } from './AssetManager.js';
 import { InputManager } from './InputManager.js';
 import * as THREE from 'three';
@@ -57,6 +58,9 @@ export class Game {
       }
     }
 
+    if (this.renderer && this.renderer.setPixelRatio) {
+      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    }
     if (this.renderer && this.renderer.setSize) {
       this.renderer.setSize(width, height);
     }
@@ -94,6 +98,7 @@ export class Game {
       { id: 5, name: 'The Golden Deer', hint: 'Only one deer is your target.', completed: false, chapter: 1 },
       { id: 6, name: 'Ravan Vadh', hint: 'Ravan has a hidden weak point. Find it.', completed: false, chapter: 1 },
       { id: 7, name: "Ahalya's Liberation", hint: "Bring Ram's sacred footprint to the stone.", completed: false, chapter: 1 },
+      { id: 8, name: "The Divine Temple", hint: "Explore the 360° divine temple architecture.", completed: false, chapter: 1 },
 
       // Chapter 2 (BAL KAND) - Level 1 and Level 2 locked by default
       { id: 1, name: 'The First Arrow', hint: 'Watch where the arrow needs to go.', completed: false, lockedByDefault: true, chapter: 2 },
@@ -155,14 +160,30 @@ export class Game {
     }
     
     if (this.camera) {
-      this.camera.left = -frustumWidth / 2;
-      this.camera.right = frustumWidth / 2;
-      this.camera.top = frustumHeight / 2;
-      this.camera.bottom = -frustumHeight / 2;
-      this.camera.updateProjectionMatrix();
+      if (this.camera.isPerspectiveCamera) {
+        this.camera.aspect = aspect;
+        this.camera.updateProjectionMatrix();
+      } else {
+        let frustumWidth = 26;
+        let frustumHeight = frustumWidth / aspect;
+        if (aspect > 1) {
+          frustumHeight = 20;
+          frustumWidth = frustumHeight * aspect;
+        }
+        this.camera.left = -frustumWidth / 2;
+        this.camera.right = frustumWidth / 2;
+        this.camera.top = frustumHeight / 2;
+        this.camera.bottom = -frustumHeight / 2;
+        this.camera.updateProjectionMatrix();
+      }
     }
-    if (this.renderer && this.renderer.setSize) {
-      this.renderer.setSize(width, height);
+    if (this.renderer) {
+      if (this.renderer.setPixelRatio) {
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      }
+      if (this.renderer.setSize) {
+        this.renderer.setSize(width, height);
+      }
     }
   }
   
@@ -497,7 +518,8 @@ export class Game {
     
     const config = this.levels.find(l => l.id === levelId) || this.levels[0];
     
-    if (levelId === 7) this.currentLevelObj = new BalKandLevel7(this);
+    if (levelId === 8) this.currentLevelObj = new BalKandLevel8(this);
+    else if (levelId === 7) this.currentLevelObj = new BalKandLevel7(this);
     else if (levelId === 6) this.currentLevelObj = new BalKandLevel6(this);
     else if (levelId === 5) this.currentLevelObj = new BalKandLevel5(this);
     else if (levelId === 4) this.currentLevelObj = new BalKandLevel4(this);
