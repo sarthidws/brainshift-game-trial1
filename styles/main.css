@@ -1217,9 +1217,6 @@ canvas {
   flex-direction: column;
   justify-content: space-between;
 }
-.temple-level-ui > * {
-  pointer-events: auto;
-}
 
 /* Loading Overlay Card */
 .temple-loading-card {
@@ -1292,7 +1289,7 @@ canvas {
   box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.6);
 }
 
-/* 360 Exploration Guidance Badge */
+/* 360 Exploration Guidance Badge (Pure informational overlay, non-blocking) */
 .temple-360-guide {
   position: absolute;
   top: calc(max(10px, env(safe-area-inset-top, 10px)) + 68px);
@@ -1311,7 +1308,7 @@ canvas {
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), visibility 0.35s;
-  pointer-events: auto;
+  pointer-events: none;
   white-space: nowrap;
   max-width: 90%;
 }
@@ -1357,7 +1354,7 @@ canvas {
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), visibility 0.4s;
-  pointer-events: auto;
+  pointer-events: none;
   z-index: 120;
 }
 
@@ -1374,6 +1371,7 @@ canvas {
   background: linear-gradient(180deg, #FFB74D 0%, #FF9800 100%);
   box-shadow: inset 0 -5px 0 var(--orange-shadow), inset 0 5px 0 rgba(255, 255, 255, 0.5), 0 10px 25px rgba(230, 81, 0, 0.4);
   animation: pulseGlow 2.5s infinite alternate ease-in-out;
+  pointer-events: auto;
 }
 
 @keyframes pulseGlow {
@@ -1402,7 +1400,7 @@ canvas {
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), visibility 0.4s;
-  pointer-events: auto;
+  pointer-events: none;
   z-index: 120;
 }
 
@@ -1427,6 +1425,7 @@ canvas {
   position: relative;
   animation: bounceTap 2s infinite ease-in-out;
   transition: transform 0.15s ease;
+  pointer-events: auto;
 }
 
 .temple-tap-pill:active {

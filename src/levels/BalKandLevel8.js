@@ -15,19 +15,23 @@ export class BalKandLevel8 {
     // 3D Model references
     this.templeGroup = null;
     this.shivaGroup = null;
-    this.templeTargetScale = 14;
-    this.shivaTargetScale = 11;
+    this.templeTargetScale = 8.8; // Well-proportioned scale for both mobile and desktop
+    this.shivaTargetScale = 7.2;
     this.templeLoaded = false;
     this.shivaLoaded = false;
 
-    // Effects & Visuals
+    // Visuals
     this.particleMesh = null;
     this.auraRing = null;
-    this.glowFlash = null;
+    this.shivaSpotLight = null;
     this.sunLight = null;
-    this.raycaster = new THREE.Raycaster();
-    this.mouse = new THREE.Vector2();
+    this.ground = null;
+    this.outerRing = null;
+
+    // Interaction
     this.pointerDownPos = new THREE.Vector2();
+    this.pointerDownTime = 0;
+    this.resumeRotateTimer = null;
 
     // DOM UI
     this.uiContainer = null;
@@ -45,33 +49,43 @@ export class BalKandLevel8 {
     const height = app.clientHeight || window.innerHeight;
     const aspect = width / height;
 
-    // 1. Perspective Camera Setup
+    // 1. Perspective Camera Setup (Optimized FOV & Framing)
     this.originalCamera = this.game.camera;
     this.perspectiveCamera = new THREE.PerspectiveCamera(45, aspect, 0.1, 1000);
     this.game.camera = this.perspectiveCamera;
-    this.updateCameraLayout();
+
+    const isPortrait = height > width;
+    const camDistance = isPortrait ? 22 : 17;
+    const camHeight = isPortrait ? 8.0 : 6.0;
+    this.perspectiveCamera.position.set(0, camHeight, camDistance);
 
     // 2. Clear Scene & Setup Sky Background
     this.game.scene.background = new THREE.Color(0xFDF8EE);
 
-    // 3. OrbitControls for 360° Exploration
-    this.controls = new OrbitControls(this.perspectiveCamera, this.game.canvas);
+    // 3. OrbitControls attached to full-screen container for touch & mouse 360 rotation & pinch zoom
+    const domTarget = document.getElementById('app') || this.game.canvas;
+    this.controls = new OrbitControls(this.perspectiveCamera, domTarget);
     this.controls.enableDamping = true;
-    this.controls.dampingFactor = 0.05;
+    this.controls.dampingFactor = 0.08;
+    this.controls.enableRotate = true;
     this.controls.enableZoom = true;
-    this.controls.minDistance = 6;
-    this.controls.maxDistance = 55;
+    this.controls.enablePan = false; // Keep models centered
+    this.controls.rotateSpeed = 0.9;
+    this.controls.zoomSpeed = 1.1;
+    this.controls.minDistance = 7;
+    this.controls.maxDistance = 45;
     this.controls.maxPolarAngle = Math.PI / 2 + 0.02; // Keep camera above courtyard ground
     this.controls.minPolarAngle = 0.1;
     this.controls.autoRotate = true;
     this.controls.autoRotateSpeed = 1.0;
-    this.controls.target.set(0, 4, 0);
+    this.controls.target.set(0, 3.0, 0);
+    this.controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
     this.controls.update();
 
     // 4. Lighting Rig
     this.setupLighting();
 
-    // 5. Courtyard Platform
+    // 5. Courtyard Platform (Scaled to fit nicely)
     this.setupCourtyard();
 
     // 6. Floating Divine Golden Particles & Aura
@@ -85,35 +99,14 @@ export class BalKandLevel8 {
 
     // Event Listeners
     window.addEventListener('resize', this.onResize);
-    this.game.canvas.addEventListener('pointerdown', this.onPointerDown);
-    this.game.canvas.addEventListener('pointerup', this.onPointerUp);
-  }
-
-  updateCameraLayout() {
-    if (!this.perspectiveCamera) return;
-    const isPortrait = window.innerHeight > window.innerWidth;
-    const camDistance = isPortrait ? 24 : 18;
-    const camHeight = isPortrait ? 8.5 : 6.5;
-    
-    // Smoothly preserve angle if controls exist
-    if (this.controls) {
-      const currentDir = new THREE.Vector3().subVectors(this.perspectiveCamera.position, this.controls.target).normalize();
-      if (currentDir.lengthSq() > 0.1) {
-        this.perspectiveCamera.position.copy(this.controls.target).addScaledVector(currentDir, camDistance);
-        this.perspectiveCamera.position.y = Math.max(camHeight, this.perspectiveCamera.position.y);
-      } else {
-        this.perspectiveCamera.position.set(0, camHeight, camDistance);
-      }
-      this.controls.update();
-    } else {
-      this.perspectiveCamera.position.set(0, camHeight, camDistance);
-    }
+    domTarget.addEventListener('pointerdown', this.onPointerDown, { passive: true });
+    domTarget.addEventListener('pointerup', this.onPointerUp, { passive: true });
   }
 
   setupLighting() {
     // Warm Sun Directional Light
     this.sunLight = new THREE.DirectionalLight(0xFFF3D6, 2.8);
-    this.sunLight.position.set(15, 28, 18);
+    this.sunLight.position.set(15, 26, 18);
     this.sunLight.isLevelObject = true;
     this.game.scene.add(this.sunLight);
 
@@ -123,9 +116,9 @@ export class BalKandLevel8 {
     fillLight.isLevelObject = true;
     this.game.scene.add(fillLight);
 
-    // Divine Shiva Top Spot
+    // Divine Shiva Top Spotlight
     this.shivaSpotLight = new THREE.PointLight(0xFFE082, 0, 30);
-    this.shivaSpotLight.position.set(0, 12, 0);
+    this.shivaSpotLight.position.set(0, 10, 2.5);
     this.shivaSpotLight.isLevelObject = true;
     this.game.scene.add(this.shivaSpotLight);
 
@@ -137,20 +130,20 @@ export class BalKandLevel8 {
 
   setupCourtyard() {
     // Courtyard Stone Base Circle
-    const groundGeo = new THREE.CylinderGeometry(18, 18.5, 0.6, 48);
+    const groundGeo = new THREE.CylinderGeometry(14, 14.5, 0.5, 48);
     const groundMat = new THREE.MeshStandardMaterial({
-      color: 0xE8DFD0,
+      color: 0xEAE2D5,
       roughness: 0.8,
       metalness: 0.1
     });
     this.ground = new THREE.Mesh(groundGeo, groundMat);
-    this.ground.position.set(0, -0.3, 0);
+    this.ground.position.set(0, -0.25, 0);
     this.ground.isLevelObject = true;
     this.ground.receiveShadow = true;
     this.game.scene.add(this.ground);
 
     // Outer Decorative Ring
-    const ringGeo = new THREE.RingGeometry(18.2, 19.5, 48);
+    const ringGeo = new THREE.RingGeometry(14.2, 15.2, 48);
     const ringMat = new THREE.MeshBasicMaterial({
       color: 0xD4AF37,
       side: THREE.DoubleSide,
@@ -163,8 +156,8 @@ export class BalKandLevel8 {
     this.outerRing.isLevelObject = true;
     this.game.scene.add(this.outerRing);
 
-    // Divine Manifestation Aura Ring for Shiva
-    const auraGeo = new THREE.RingGeometry(4.5, 6.5, 48);
+    // Divine Manifestation Aura Ring for Shiva (placed at foreground position z = 2.5)
+    const auraGeo = new THREE.RingGeometry(3.2, 4.8, 48);
     const auraMat = new THREE.MeshBasicMaterial({
       color: 0xFFD54F,
       side: THREE.DoubleSide,
@@ -174,20 +167,20 @@ export class BalKandLevel8 {
     });
     this.auraRing = new THREE.Mesh(auraGeo, auraMat);
     this.auraRing.rotation.x = -Math.PI / 2;
-    this.auraRing.position.set(0, 0.05, 0);
+    this.auraRing.position.set(0, 0.05, 2.5);
     this.auraRing.isLevelObject = true;
     this.game.scene.add(this.auraRing);
   }
 
   setupDivineParticles() {
-    const particleCount = 200;
+    const particleCount = 180;
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
 
     for (let i = 0; i < particleCount; i++) {
-      const radius = 4 + Math.random() * 16;
+      const radius = 3 + Math.random() * 13;
       const theta = Math.random() * Math.PI * 2;
-      const y = Math.random() * 20;
+      const y = Math.random() * 16;
 
       positions[i * 3] = radius * Math.cos(theta);
       positions[i * 3 + 1] = y;
@@ -210,7 +203,7 @@ export class BalKandLevel8 {
 
     const texture = new THREE.CanvasTexture(canvas);
     const material = new THREE.PointsMaterial({
-      size: 0.95,
+      size: 0.9,
       map: texture,
       transparent: true,
       blending: THREE.AdditiveBlending,
@@ -238,7 +231,7 @@ export class BalKandLevel8 {
         this.state = 'TEMPLE_VIEW';
         this.hideLoading();
         this.showTempleUI();
-        this.showDialog("🕉️ Explore the sacred temple in 360°! Tap the temple to reveal Lord Shiva.", false);
+        this.showDialog("🕉️ Explore the temple in 360°! Tap to reveal Lord Shiva.", false);
       }
     };
 
@@ -259,16 +252,15 @@ export class BalKandLevel8 {
           }
         });
 
-        // Compute Bounding Box & Normalize Scale
+        // Compute Bounding Box & Normalize Scale (Height ~8.8)
         const box = new THREE.Box3().setFromObject(this.templeGroup);
         const center = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3());
         const maxDim = Math.max(size.x, size.y, size.z);
-        const scale = 14 / (maxDim || 1);
-        this.templeTargetScale = scale;
+        const scale = this.templeTargetScale / (maxDim || 1);
         this.templeGroup.scale.setScalar(scale);
 
-        // Place on Courtyard Ground
+        // Place at origin initially
         const scaledBox = new THREE.Box3().setFromObject(this.templeGroup);
         const scaledCenter = scaledBox.getCenter(new THREE.Vector3());
         this.templeGroup.position.x = -scaledCenter.x;
@@ -307,7 +299,6 @@ export class BalKandLevel8 {
             child.receiveShadow = true;
             if (child.material) {
               child.material.side = THREE.DoubleSide;
-              // Enhance material sheen for divine statue
               if (child.material.isMeshStandardMaterial) {
                 child.material.roughness = 0.45;
                 child.material.metalness = 0.25;
@@ -316,17 +307,16 @@ export class BalKandLevel8 {
           }
         });
 
-        // Normalize Scale (~11 units height)
+        // Normalize Scale (Height ~7.2)
         const box = new THREE.Box3().setFromObject(this.shivaGroup);
-        const center = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3());
         const maxDim = Math.max(size.x, size.y, size.z);
-        const scale = 11.5 / (maxDim || 1);
+        const scale = this.shivaTargetScale / (maxDim || 1);
         this.shivaTargetScale = scale;
 
-        // Position at Center
-        this.shivaGroup.scale.set(0.001, 0.001, 0.001); // Initial scale 0 before reveal
-        this.shivaGroup.position.set(0, 0.2, 0);
+        // Position in foreground (z = 2.5) with initial scale 0 (hidden until revealed)
+        this.shivaGroup.scale.set(0.001, 0.001, 0.001);
+        this.shivaGroup.position.set(0, 0.2, 2.5);
         this.shivaGroup.visible = false;
 
         this.game.scene.add(this.shivaGroup);
@@ -392,7 +382,7 @@ export class BalKandLevel8 {
 
     document.getElementById('hud')?.appendChild(this.uiContainer);
 
-    // Tap Prompts and Next Level triggers
+    // Stop propagation on buttons so clicking doesn't rotate OrbitControls
     const tapBtn = this.uiContainer.querySelector('#btn-tap-temple');
     if (tapBtn) {
       const handleTap = (e) => {
@@ -402,8 +392,8 @@ export class BalKandLevel8 {
         }
         this.triggerDivineManifestation();
       };
-      tapBtn.addEventListener('click', handleTap);
-      tapBtn.addEventListener('pointerup', handleTap);
+      ['click', 'pointerup', 'touchend'].forEach(evt => tapBtn.addEventListener(evt, handleTap));
+      ['pointerdown', 'touchstart', 'mousedown'].forEach(evt => tapBtn.addEventListener(evt, e => e.stopPropagation()));
     }
 
     const nextBtn = this.uiContainer.querySelector('#btn-temple-next');
@@ -415,8 +405,8 @@ export class BalKandLevel8 {
         }
         this.completeLevel();
       };
-      nextBtn.addEventListener('click', handleNext);
-      nextBtn.addEventListener('pointerup', handleNext);
+      ['click', 'pointerup', 'touchend'].forEach(evt => nextBtn.addEventListener(evt, handleNext));
+      ['pointerdown', 'touchstart', 'mousedown'].forEach(evt => nextBtn.addEventListener(evt, e => e.stopPropagation()));
     }
   }
 
@@ -444,6 +434,7 @@ export class BalKandLevel8 {
 
   onPointerDown(e) {
     this.pointerDownPos.set(e.clientX, e.clientY);
+    this.pointerDownTime = performance.now();
     if (this.controls) {
       this.controls.autoRotate = false;
       if (this.resumeRotateTimer) clearTimeout(this.resumeRotateTimer);
@@ -456,9 +447,10 @@ export class BalKandLevel8 {
   }
 
   onPointerUp(e) {
-    // Detect tap / click (minimal drag distance)
+    // Detect tap / click (minimal drag distance & quick duration)
     const dist = Math.hypot(e.clientX - this.pointerDownPos.x, e.clientY - this.pointerDownPos.y);
-    if (dist < 15 && this.state === 'TEMPLE_VIEW') {
+    const duration = performance.now() - this.pointerDownTime;
+    if (dist < 15 && duration < 500 && this.state === 'TEMPLE_VIEW') {
       this.triggerDivineManifestation();
     }
   }
@@ -472,7 +464,7 @@ export class BalKandLevel8 {
     const tapPrompt = document.getElementById('temple-tap-prompt');
     if (tapPrompt) tapPrompt.classList.remove('active');
 
-    // Make Shiva visible & start scaling
+    // Make Shiva visible
     this.shivaGroup.visible = true;
 
     // Show celebratory dialogue
@@ -495,13 +487,12 @@ export class BalKandLevel8 {
       this.perspectiveCamera.aspect = aspect;
       this.perspectiveCamera.updateProjectionMatrix();
     }
-    this.updateCameraLayout();
   }
 
   update(delta) {
     this.time += delta;
 
-    // Update OrbitControls
+    // Update OrbitControls with damping
     if (this.controls) {
       this.controls.update();
     }
@@ -510,39 +501,37 @@ export class BalKandLevel8 {
     if (this.particleMesh) {
       const positions = this.particleMesh.geometry.attributes.position.array;
       for (let i = 0; i < positions.length / 3; i++) {
-        positions[i * 3 + 1] += delta * 0.9;
-        if (positions[i * 3 + 1] > 20) {
+        positions[i * 3 + 1] += delta * 0.8;
+        if (positions[i * 3 + 1] > 16) {
           positions[i * 3 + 1] = 0.5;
         }
       }
       this.particleMesh.geometry.attributes.position.needsUpdate = true;
-      this.particleMesh.rotation.y += delta * 0.07;
+      this.particleMesh.rotation.y += delta * 0.06;
     }
 
     // Outer decorative ring animation
     if (this.outerRing) {
-      this.outerRing.rotation.z += delta * 0.12;
+      this.outerRing.rotation.z += delta * 0.1;
     }
 
-    // Handle Manifestation Transformation Animation
+    // Handle Manifestation Transformation Animation (Separating Temple into Background with Clear Gap)
     if (this.state === 'TRANSFORMING') {
       this.transformProgress += delta / 2.2; // 2.2 second smooth transition
       const p = Math.min(1, this.transformProgress);
       // Smooth ease-out cubic
       const ease = 1 - Math.pow(1 - p, 3);
 
-      // 1. Temple Transition: Gracefully scale back slightly & raise sanctum
+      // 1. Temple Transition: Glides back to z = -8.5 with clear gap behind Shiva
       if (this.templeGroup) {
-        const templeScale = this.templeTargetScale * (1 - ease * 0.2);
-        this.templeGroup.scale.setScalar(templeScale);
-        this.templeGroup.position.z = -ease * 3.5;
+        this.templeGroup.position.z = -ease * 8.5;
       }
 
-      // 2. Shiva Manifestation: Rising & Scaling
+      // 2. Shiva Manifestation: Rising in Foreground (z = 2.5) with scaling
       if (this.shivaGroup) {
         const shivaScale = this.shivaTargetScale * ease;
         this.shivaGroup.scale.setScalar(shivaScale);
-        this.shivaGroup.position.y = 0.2 + Math.sin(p * Math.PI * 0.5) * 0.6;
+        this.shivaGroup.position.set(0, 0.2 + Math.sin(p * Math.PI * 0.5) * 0.5, 2.5);
         this.shivaGroup.rotation.y = (1 - ease) * Math.PI * 0.5;
       }
 
@@ -565,10 +554,10 @@ export class BalKandLevel8 {
 
     // Continuous Living Animation in Shiva View
     if (this.state === 'SHIVA_VIEW' && this.shivaGroup) {
-      // Divine subtle levitation float
-      this.shivaGroup.position.y = 0.8 + Math.sin(this.time * 1.8) * 0.2;
+      // Gentle divine floating levitation
+      this.shivaGroup.position.y = 0.6 + Math.sin(this.time * 1.8) * 0.2;
       if (this.auraRing) {
-        this.auraRing.rotation.z += delta * 0.3;
+        this.auraRing.rotation.z += delta * 0.25;
         this.auraRing.material.opacity = 0.75 + Math.sin(this.time * 2.5) * 0.15;
       }
     }
@@ -637,8 +626,11 @@ export class BalKandLevel8 {
     }
 
     // Remove Event Listeners
+    const domTarget = document.getElementById('app') || this.game.canvas;
     window.removeEventListener('resize', this.onResize);
-    this.game.canvas.removeEventListener('pointerdown', this.onPointerDown);
-    this.game.canvas.removeEventListener('pointerup', this.onPointerUp);
+    if (domTarget) {
+      domTarget.removeEventListener('pointerdown', this.onPointerDown);
+      domTarget.removeEventListener('pointerup', this.onPointerUp);
+    }
   }
 }
